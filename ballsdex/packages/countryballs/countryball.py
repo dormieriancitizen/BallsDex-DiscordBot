@@ -25,8 +25,8 @@ class CountryBall:
         self.hp_bonus: int | None = None
 
     @classmethod
-    async def get_random(cls):
-        countryballs = list(filter(lambda m: m.enabled, balls.values()))
+    async def get_random(cls) -> Ball:
+        countryballs: list[Ball] = list(filter(lambda m: m.enabled, balls.values()))
         if not countryballs:
             raise RuntimeError("No ball to spawn")
         rarities = [x.rarity for x in countryballs]
@@ -61,7 +61,7 @@ class CountryBall:
             permissions = channel.permissions_for(channel.guild.me)
             if permissions.attach_files and permissions.send_messages:
                 self.message = await channel.send(
-                    f"A wild {settings.collectible_name} appeared!",
+                    f"<@&1343655039834652875>\nA wild {settings.collectible_name} appeared!",
                     view=CatchView(self),
                     file=discord.File(file_location, filename=file_name),
                 )
