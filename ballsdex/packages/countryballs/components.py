@@ -68,6 +68,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             possible_names = (self.ball.name.lower(),)
         if self.ball.model.translations:
             possible_names += tuple(x.lower() for x in self.ball.model.translations.split(";"))
+
         cname = self.name.value.lower().strip()
         # Remove fancy unicode characters like ’ to replace to '
         cname = cname.replace("\u2019", "'")
@@ -84,7 +85,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
 
                 if self.ball.caught:
                     await interaction.followup.send(
-                        f"{interaction.user.mention} Sorry, this {settings.collectible_name} went to someoone else during the cooldown!!",
+                        f"{interaction.user.mention} Sorry, this {settings.collectible_name} went to someone else during the cooldown!!",
                         ephemeral=True,
                         allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
                     )
