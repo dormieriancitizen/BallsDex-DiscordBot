@@ -68,9 +68,12 @@ class CountryBallsSpawner(commands.Cog):
             log.warning(f"Lost channel {self.cache[guild.id]} for guild {guild.name}.")
             del self.cache[guild.id]
             return
-        ball = await CountryBall.get_random()
-        ball.algo = algo
-        await ball.spawn(cast(discord.TextChannel, channel))
+
+
+        for _ in range(2):
+            ball = await CountryBall.get_random()
+            ball.algo = algo
+            await ball.spawn(cast(discord.TextChannel, channel))
 
     @commands.Cog.listener()
     async def on_ballsdex_settings_change(

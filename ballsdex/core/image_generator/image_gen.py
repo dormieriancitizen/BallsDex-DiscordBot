@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 
 
 SOURCES_PATH = Path(os.path.dirname(os.path.abspath(__file__)), "./src")
+SRC_EXTRA_PATH = Path("/src-extra")
+
 WIDTH = 1500
 HEIGHT = 2000
 
@@ -35,7 +37,7 @@ title_font = ImageFont.truetype(str(SOURCES_PATH / "ArsenicaTrial-Extrabold.ttf"
 capacity_name_font = ImageFont.truetype(str(SOURCES_PATH / "Bobby Jones Soft.otf"), 110)
 capacity_description_font = ImageFont.truetype(str(SOURCES_PATH / "OpenSans-Semibold.ttf"), 75)
 stats_font = ImageFont.truetype(str(SOURCES_PATH / "Bobby Jones Soft.otf"), 130)
-credits_font = ImageFont.truetype(str(SOURCES_PATH / "arial.ttf"), 40)
+credits_font = ImageFont.truetype(str(SRC_EXTRA_PATH / "CascadiaMono.ttf"), 40)
 
 credits_color_cache = {}
 
