@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import math
 import random
+import asyncio
 from datetime import datetime
 from typing import TYPE_CHECKING, cast
 
@@ -50,6 +51,9 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         await interaction.response.defer(thinking=True)
 
         player, _ = await Player.get_or_create(discord_id=interaction.user.id)
+        member = cast(discord.Member, interaction.user)
+        has_caught_before =  await BallInstance.filter(player=player, ball=self.ball.model).exists()
+
         if self.ball.caught:
             await interaction.followup.send(
                 f"{interaction.user.mention} I was caught already!",
@@ -70,27 +74,45 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         cname = cname.replace("\u2018", "'")
         cname = cname.replace("\u201C", '"')
         cname = cname.replace("\u201D", '"')
+
         # There are other "fancy" quotes as well but these are most common
         if cname in possible_names:
+            if settings.caught_cooldown>0 and has_caught_before:
+                cooldown = await interaction.channel.send(f"{interaction.user.mention} You already have this {settings.collectible_name}! Applying a {settings.caught_cooldown+5} delay before catching.")
+                await asyncio.sleep(settings.caught_cooldown)
+                await cooldown.delete()
+
+                if self.ball.caught:
+                    await interaction.followup.send(
+                        f"{interaction.user.mention} Sorry, this {settings.collectible_name} went to someoone else during the cooldown!!",
+                        ephemeral=True,
+                        allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
+                    )
+
+                    return
+
             self.ball.caught = True
-            ball, has_caught_before = await self.catch_ball(
+            ball, _ = await self.catch_ball(
                 interaction.client, cast(discord.Member, interaction.user)
             )
 
             special = ""
             if ball.specialcard and ball.specialcard.catch_phrase:
                 special += f"*{ball.specialcard.catch_phrase}*\n"
-            if has_caught_before:
+            
+            if not has_caught_before:
                 special += (
                     f"This is a **new {settings.collectible_name}** "
                     "that has been added to your completion!"
                 )
+            
             await interaction.followup.send(
                 f"{interaction.user.mention} You caught **{self.ball.name}!** "
                 f"`(#{ball.pk:0X}, {ball.attack_bonus:+}%/{ball.health_bonus:+}%)`\n\n"
                 f"{special}",
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
             )
+
             self.button.disabled = True
             await interaction.followup.edit_message(self.ball.message.id, view=self.button.view)
         else:

@@ -85,6 +85,9 @@ class Settings:
     max_attack_bonus: int = 20
     max_health_bonus: int = 20
 
+    caught_cooldown: int = 10
+    per_spawn: int = 1
+
     # /about
     about_description: str = ""
     github_link: str = ""
@@ -158,6 +161,9 @@ def read_settings(path: "Path"):
     settings.max_favorites = content.get("max-favorites", 50)
     settings.max_attack_bonus = content.get("max-attack-bonus", 20)
     settings.max_health_bonus = content.get("max-health-bonus", 20)
+
+    settings.caught_cooldown = content["catch"]["caught_cooldown"] or 10
+    settings.per_spawn = content["catch"]["per_spawn"] or 1
 
     settings.packages = content.get("packages") or [
         "ballsdex.packages.admin",
@@ -239,6 +245,9 @@ max-attack-bonus: 20
 # this cannot be smaller than 0, enter a positive number
 max-health-bonus: 20
 
+catch:
+  caught_cooldown: 10
+  
 # enables the /admin command
 admin-command:
 

@@ -70,7 +70,7 @@ class CountryBallsSpawner(commands.Cog):
             return
 
 
-        for _ in range(2):
+        for _ in range(settings.per_spawn):
             ball = await CountryBall.get_random()
             ball.algo = algo
             await ball.spawn(cast(discord.TextChannel, channel))
