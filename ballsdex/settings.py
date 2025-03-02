@@ -87,6 +87,9 @@ class Settings:
 
     caught_cooldown: int = 10
     per_spawn: int = 1
+    caught_msgs: list[str] = tuple()
+    wrong_msgs: list[str] = tuple()
+    slow_msgs: list[str] = tuple()
 
     # /about
     about_description: str = ""
@@ -164,6 +167,9 @@ def read_settings(path: "Path"):
 
     settings.caught_cooldown = content["catch"]["caught_cooldown"] or 10
     settings.per_spawn = content["catch"]["per_spawn"] or 1
+    settings.caught_msgs = content["catch"]["caught_msgs"] or ["{0} You caught **{2}**!"]
+    settings.wrong_msgs = content["catch"]["wrong_msgs"] or ["{0} Wrong name!"]
+    settings.slow_msgs = content["catch"]["slow_msgs"] or ["{0} Sorry, this {1} was caught already!"]
 
     settings.packages = content.get("packages") or [
         "ballsdex.packages.admin",
@@ -189,7 +195,7 @@ def read_settings(path: "Path"):
 
 
 def write_default_settings(path: "Path"):
-    path.write_text(
+    _ = path.write_text(
         """# yaml-language-server: $schema=json-config-ref.json
 
 # paste the bot token after regenerating it here
@@ -247,7 +253,11 @@ max-health-bonus: 20
 
 catch:
   caught_cooldown: 10
-  
+  per_spawn: 2
+  # {0} is mention. {1} is collectible name. {2} is ball name.
+  caught_msgs:
+    - "{0} You caught **{2}**!"
+
 # enables the /admin command
 admin-command:
 

@@ -54,14 +54,6 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         member = cast(discord.Member, interaction.user)
         has_caught_before =  await BallInstance.filter(player=player, ball=self.ball.model).exists()
 
-        if self.ball.caught:
-            await interaction.followup.send(
-                f"{interaction.user.mention} I was caught already!",
-                ephemeral=True,
-                allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
-            )
-            return
-
         if self.ball.model.catch_names:
             possible_names = (self.ball.name.lower(), *self.ball.model.catch_names.split(";"))
         else:
@@ -78,19 +70,20 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
 
         # There are other "fancy" quotes as well but these are most common
         if cname in possible_names:
+            cooldown = None
             if settings.caught_cooldown>0 and has_caught_before:
                 cooldown = await interaction.channel.send(f"{interaction.user.mention} You already have this {settings.collectible_name}! Applying a {settings.caught_cooldown+5} delay before catching.")
                 await asyncio.sleep(settings.caught_cooldown)
                 await cooldown.delete()
 
-                if self.ball.caught:
-                    await interaction.followup.send(
-                        f"{interaction.user.mention} Sorry, this {settings.collectible_name} went to someone else during the cooldown!!",
-                        ephemeral=True,
-                        allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
-                    )
-
-                    return
+            if self.ball.caught:
+                slow_msg = random.choice(settings.slow_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name)
+                await interaction.followup.edit(
+                    slow_msg,
+                    allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
+                )
+                
+                return
 
             self.ball.caught = True
             ball, _ = await self.catch_ball(
@@ -107,9 +100,11 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
                     "that has been added to your completion!"
                 )
             
+            catch_msg = random.choice(settings.caught_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name)+" "
+
             await interaction.followup.send(
-                f"{interaction.user.mention} You caught **{self.ball.name}!** "
-                f"`(#{ball.pk:0X}, {ball.attack_bonus:+}%/{ball.health_bonus:+}%)`\n\n"
+                catch_msg+
+                f"`(#{ball.pk:0X}, {ball.attack_bonus:+}%/{ball.health_bonus:+}%)`\n\n"+
                 f"{special}",
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
             )
@@ -117,8 +112,9 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             self.button.disabled = True
             await interaction.followup.edit_message(self.ball.message.id, view=self.button.view)
         else:
+            wrong_msg = random.choice(settings.wrong_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name)
             await interaction.followup.send(
-                f"{interaction.user.mention} Wrong name!",
+                wrong_msg,
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
                 ephemeral=False,
             )
