@@ -77,10 +77,9 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
                 await cooldown.delete()
 
             if self.ball.caught:
-                slow_msg = random.choice(settings.slow_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name)
-                await interaction.followup.edit(
+                slow_msg = random.choice(settings.slow_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name,settings.plural_collectible_name)
+                await interaction.followup.send(
                     slow_msg,
-                    allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
                 )
                 
                 return
@@ -100,7 +99,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
                     "that has been added to your completion!"
                 )
             
-            catch_msg = random.choice(settings.caught_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name)+" "
+            catch_msg = random.choice(settings.caught_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name,settings.plural_collectible_name)+" "
 
             await interaction.followup.send(
                 catch_msg+
@@ -112,7 +111,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             self.button.disabled = True
             await interaction.followup.edit_message(self.ball.message.id, view=self.button.view)
         else:
-            wrong_msg = random.choice(settings.wrong_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name)
+            wrong_msg = random.choice(settings.wrong_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name,settings.plural_collectible_name)
             await interaction.followup.send(
                 wrong_msg,
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),

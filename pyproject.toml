@@ -85,9 +85,3 @@ exclude = "./admin_panel/admin_panel/settings/*"
 [tool.isort]
 profile = "black"
 line_length = 99
-
-[tool.pyright]
-extraPaths = ["./admin_panel"]
-pythonVersion = "3.13"
-reportIncompatibleMethodOverride = "warning"
-reportIncompatibleVariableOverride = "warning"

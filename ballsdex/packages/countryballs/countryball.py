@@ -60,8 +60,10 @@ class CountryBall:
         try:
             permissions = channel.permissions_for(channel.guild.me)
             if permissions.attach_files and permissions.send_messages:
+                spawn_msg = "<@&1343655039834652875>\n" + random.choice(settings.spawn_msgs).format("",settings.collectible_name,"",settings.plural_collectible_name)
+
                 self.message = await channel.send(
-                    f"<@&1343655039834652875>\nA wild {settings.collectible_name} appeared!",
+                    spawn_msg,
                     view=CatchView(self),
                     file=discord.File(file_location, filename=file_name),
                 )
