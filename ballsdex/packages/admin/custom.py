@@ -46,15 +46,15 @@ class Custom(app_commands.Group):
         emoji_id: app_commands.Range[str, 17, 21],
         capacity_name: app_commands.Range[str, None, 64],
         capacity_description: app_commands.Range[str, None, 256],
-        cart: discord.Attachment,
+        cart: discord.Attachment | None = None,
         image_credits: str,
         economy: EconomyTransform | None = None,
         rarity: float = 0.0,
         enabled: bool = False,
         tradeable: bool = False,
-        catch_names: str,
+        catch_names: str | None = None,
         short_name: str | None = None,
-        spart: discord.Attachment | None = None,
+        spart: discord.Attachment,
     ):
         """
         Shortcut command for creating countryballs. They are disabled by default.
@@ -89,7 +89,10 @@ class Custom(app_commands.Group):
                 "`emoji_id` is not a valid number.", ephemeral=True
             )
             return
-        
+
+        if catch_names is None:
+            catch_names = ""
+
         # emoji = interaction.client.get_emoji(int(emoji_id))
         # if not emoji:
             # await interaction.response.send_message(
@@ -102,17 +105,17 @@ class Custom(app_commands.Group):
 
         await interaction.response.defer(ephemeral=True, thinking=True)
 
-        default_path = Path("./ballsdex/core/image_generator/src/default.png")
+        default_path = Path("./admin_panel/media/Card_Test_Placeholder.jpg")
         missing_default = ""
-        if not spart and not default_path.exists():
+        if not cart and not default_path.exists():
             missing_default = (
-                "**Warning:** The default spawn image is not set. This will result in errors when "
-                f"attempting to spawn this {settings.collectible_name}. You can edit this on the "
-                "web panel or add an image at `./ballsdex/core/image_generator/src/default.png`.\n"
+                "**Warning:** The default card art is not set. This will result in errors when "
+                f"attempting to look at this {settings.collectible_name}. You can edit this on the "
+                f"web panel or add an image at `{default_path.as_posix()}`.\n"
             )
 
         try:
-            cart_path = await save_file(cart)
+            cart_path = await save_file(cart) if cart else default_path
         except Exception as e:
             log.exception("Failed saving file when creating countryball", exc_info=True)
             await interaction.followup.send(
@@ -121,8 +124,9 @@ class Custom(app_commands.Group):
                 "The full error is in the bot logs."
             )
             return
+        
         try:
-            spart_path = await save_file(spart) if spart else default_path
+            spart_path = await save_file(spart)
         except Exception as e:
             log.exception("Failed saving file when creating countryball", exc_info=True)
             await interaction.followup.send(
@@ -157,21 +161,23 @@ class Custom(app_commands.Group):
                 f"Partial error: {', '.join(str(x) for x in e.args)}\n"
                 "The full error is in the bot logs."
             )
-        else:
-            files = [await cart.to_file()]
-            if spart:
-                files.append(await spart.to_file())
-            await interaction.client.load_cache()
-            admin_url = (
-                f"[View online](<{settings.admin_url}/bd_models/ball/{ball.pk}/change/>)\n"
-                if settings.admin_url
-                else ""
-            )
-            await interaction.followup.send(
-                f"Successfully created a {settings.collectible_name} with ID {ball.pk}! "
-                f"The internal cache was reloaded.\n{admin_url}"
-                f"{missing_default}\n"
-                f"{name=} regime={regime.name} economy={economy.name if economy else None} "
-                f"{health=} {attack=} {rarity=} {enabled=} {tradeable=} emoji={emoji_id}",
-                files=files,
-            )
+
+            return
+        
+        files = [await cart.to_file()]
+        if spart:
+            files.append(await spart.to_file())
+        await interaction.client.load_cache()
+        admin_url = (
+            f"[View online](<{settings.admin_url}/bd_models/ball/{ball.pk}/change/>)\n"
+            if settings.admin_url
+            else ""
+        )
+        await interaction.followup.send(
+            f"Successfully created a {settings.collectible_name} with ID {ball.pk}! "
+            f"The internal cache was reloaded.\n{admin_url}"
+            f"{missing_default}\n"
+            f"{name=} regime={regime.name} economy={economy.name if economy else None} "
+            f"{health=} {attack=} {rarity=} {enabled=} {tradeable=} emoji={emoji_id}",
+            files=files,
+        )

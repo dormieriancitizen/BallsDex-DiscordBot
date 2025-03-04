@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 import time
 from typing import TYPE_CHECKING
 
@@ -9,7 +10,7 @@ from tortoise import Tortoise
 
 from ballsdex.core.dev import pagify, send_interactive
 from ballsdex.core.models import Ball
-from ballsdex.settings import settings
+from ballsdex.settings import settings, update_settings
 
 log = logging.getLogger("ballsdex.core.commands")
 
@@ -87,6 +88,13 @@ class Core(commands.Cog):
             log.error(f"Failed to reload extension {package}", exc_info=True)
         else:
             await ctx.send("Extension reloaded.")
+
+    @commands.command()
+    @commands.is_owner()
+    async def reloadconf(self,ctx: commands.Context):
+        update_settings(Path("/code/config.yml"))
+        await ctx.message.add_reaction("✅")
+        await ctx.message.reply("Config values have been updated, however note that some changes may require a restart.")
 
     @commands.command()
     @commands.is_owner()
