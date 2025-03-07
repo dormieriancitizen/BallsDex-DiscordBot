@@ -1,3 +1,4 @@
+from codecs import BOM_UTF16_BE
 from pathlib import Path
 import logging
 import re
@@ -16,6 +17,8 @@ from ballsdex.settings import settings
 
 log = logging.getLogger("ballsdex.packages.admin.balls")
 FILENAME_RE = re.compile(r"^(.+)(\.\S+)$")
+
+balls: dict[int, Ball] = {}
 
 async def save_file(attachment: discord.Attachment) -> Path:
     path = Path(f"./admin_panel/media/{attachment.filename}")
@@ -181,3 +184,29 @@ class Custom(app_commands.Group):
             f"{health=} {attack=} {rarity=} {enabled=} {tradeable=} emoji={emoji_id}",
             files=files,
         )
+
+    @app_commands.command(name="bulk-update-rarities")
+    @app_commands.checks.has_any_role(*settings.root_role_ids)
+    async def bulk_update_rarities(
+        self,
+        interaction: discord.Interaction[BallsDexBot],
+        rarity_command: str,
+    ):
+        await interaction.response.defer(thinking=True, ephemeral=True)
+
+        rarities: dict[str, float] = {ballDetails.split(";")[0][0:48]: float(ballDetails.split(";")[1]) for ballDetails in rarity_command.split("|")}
+
+        balls = await Ball.all()
+        bot_countryballs: dict[str, Ball] = {ball.country: ball for ball in balls}
+        print(bot_countryballs)
+
+        msg = ""
+        for country, rarity in rarities.items():
+            if country in bot_countryballs:
+                msg += f"Set rarity of {country} to {rarity}\n"
+                bot_countryballs[country].rarity = rarity
+                await bot_countryballs[country].save(update_fields=("rarity"),force_update=True)
+            else:
+                msg += f"{settings.collectible_name} {country} not present in table\n"
+        
+        await interaction.followup.send(msg)
