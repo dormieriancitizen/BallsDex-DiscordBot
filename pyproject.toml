@@ -41,6 +41,7 @@ dependencies = [
     "Pillow==10.4.0",
     "pyyaml==6.0.2",
     "cachetools==5.5.0",
+    "django-jazzmin (>=3.0.1,<4.0.0)",
 ]
 
 [project.optional-dependencies]

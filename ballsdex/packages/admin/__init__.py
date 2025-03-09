@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 from discord import app_commands
 
 from ballsdex.packages.admin.cog import Admin
-from ballsdex.packages.admin.custom import Custom as CustomGroup
 
 if TYPE_CHECKING:
     from ballsdex.core.bot import BallsDexBot
@@ -41,8 +40,8 @@ def strip_descriptions(cog: Admin):
 async def setup(bot: "BallsDexBot"):
     n = Admin(bot)
 
-    n.__cog_app_commands_group__.add_command(CustomGroup(name="custom"))
-    log.info("Patched in custom group")
+    # n.__cog_app_commands_group__.add_command(CustomGroup(name="custom"))
+    # log.info("Patched in custom group")
 
     if command_count(n) > 3900:
         strip_descriptions(n)
