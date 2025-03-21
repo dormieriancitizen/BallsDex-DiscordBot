@@ -1,0 +1,106 @@
+x-common-env-vars:
+  - &postgres-db
+    POSTGRES_DB=ballsdex
+  - &postgres-user
+    POSTGRES_USER=ballsdex
+  - &postgres-url
+    "BALLSDEXBOT_DB_URL=postgres://ballsdex:${POSTGRES_PASSWORD}@postgres:5432/ballsdex"
+
+services:
+  bot:
+    restart: "no"
+    image: ballsdex
+    build: .
+    environment:
+      - *postgres-url
+    depends_on:
+      migration:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
+    volumes:
+      - ./:/code
+      - /opt/IndividualDexData/media:/code/admin_panel/media
+      - /opt/IndividualDexData/config.yml:/code/config.yml
+    tty: true
+    ports:
+      - "50677:50677"
+    command: "poetry --quiet run python3 -m ballsdex --dev"
+  
+  admin-panel:
+    image: ballsdex
+    build: .
+    ports:
+      - "31617:8000"
+    environment:
+      - *postgres-url
+      # if serving the admin panel online, copy the file "production.example.py" and uncomment
+      - DJANGO_SETTINGS_MODULE=admin_panel.settings.production
+    depends_on:
+      migration:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
+    volumes:
+      - ./:/code
+      - /opt/IndividualDexData/django_production.py:/code/admin_panel/admin_panel/settings/production.py
+      - /opt/IndividualDexData/config.yml:/code/config.yml
+      - /opt/IndividualDexData/media:/code/admin_panel/media
+    tty: true
+    working_dir: /code/admin_panel
+    command: "poetry --quiet run uvicorn admin_panel.asgi:application --host 0.0.0.0"
+
+  migration:
+    image: ballsdex
+    build: .
+    environment:
+      - *postgres-url
+    volumes:
+      - ./:/code
+      - /opt/IndividualDexData/media:/code/admin_panel/media
+      - /opt/IndividualDexData/config.yml:/code/config.yml
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    working_dir: /code/admin_panel
+    command: >
+      sh -c "
+      poetry --quiet run python3 manage.py migrate --no-input --fake-initial &&
+      poetry --quiet run python3 manage.py collectstatic --no-input
+      "
+
+  postgres-db:
+      image: postgres
+      restart: always
+      hostname: postgres
+      shm_size: 1g
+      environment:
+        - *postgres-db
+        - *postgres-user
+        - POSTGRES_PASSWORD
+      volumes:  # Persist the db data
+        - /opt/IndividualDexData/database-data:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ballsdex}"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+
+  postgres-backup:
+      image: prodrigestivill/postgres-backup-local
+      restart: always
+      user: postgres:postgres
+      volumes:
+        - /opt/IndividualDexData/pgbackups:/backups
+      depends_on:
+        - postgres-db
+      environment:
+        - *postgres-db
+        - *postgres-user
+        - POSTGRES_PASSWORD
+        - POSTGRES_HOST=postgres
+        - SCHEDULE=@daily
+        - BACKUP_KEEP_DAYS=7
+        - BACKUP_KEEP_WEEKS=4
+        - BACKUP_KEEP_MONTHS=6
+        - HEALTHCHECK_PORT=3928
