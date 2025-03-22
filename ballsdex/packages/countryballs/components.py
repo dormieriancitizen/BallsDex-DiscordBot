@@ -13,7 +13,7 @@ from tortoise.timezone import get_default_timezone
 from tortoise.timezone import now as datetime_now
 
 from ballsdex.core.metrics import caught_balls
-from ballsdex.core.models import BallInstance, Player, specials
+from ballsdex.core.models import BallInstance, Player, Special, specials
 from ballsdex.settings import settings
 
 if TYPE_CHECKING:
@@ -136,7 +136,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         )
 
         # check if we can spawn cards with a special background
-        special = self.ball.special
+        special: Special = self.ball.special
         population = [
             x 
             for x in specials.values()
@@ -145,6 +145,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             <= datetime_now()
             <= (x.end_date or datetime.max.replace(tzinfo=get_default_timezone()))
         ]
+
         if not special and population:
             # Here we try to determine what should be the chance of having a common card
             # since the rarity field is a value between 0 and 1, 1 being no common
@@ -159,7 +160,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             # The old way of doing this was unhinged
             # Here we pick a float between 0-1 and choose the lowest special in that range
             selected_rarity = random.random()
-            special = min([special for special in population if special.rarity < selected_rarity], default=None, key=lambda special: special.rarity) 
+            special = min([special for special in population if selected_rarity < special.rarity], key=lambda special: special.rarity, default=None) 
             
 
         is_new = not await BallInstance.filter(player=player, ball=self.ball.model).exists()
