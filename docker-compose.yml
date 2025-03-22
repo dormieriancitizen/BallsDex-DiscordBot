@@ -22,6 +22,7 @@ services:
       - ./:/code
       - /opt/IndividualDexData/media:/code/admin_panel/media
       - /opt/IndividualDexData/config.yml:/code/config.yml
+      - /opt/IndividualDexData/ballsdex.log:/code/ballsdex.log
     tty: true
     ports:
       - "50677:50677"
@@ -46,6 +47,7 @@ services:
       - /opt/IndividualDexData/django_production.py:/code/admin_panel/admin_panel/settings/production.py
       - /opt/IndividualDexData/config.yml:/code/config.yml
       - /opt/IndividualDexData/media:/code/admin_panel/media
+      - /opt/IndividualDexData/ballsdex.log:/code/ballsdex.log
     tty: true
     working_dir: /code/admin_panel
     command: "poetry --quiet run uvicorn admin_panel.asgi:application --host 0.0.0.0"
