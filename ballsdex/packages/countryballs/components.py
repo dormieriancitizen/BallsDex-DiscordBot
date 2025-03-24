@@ -158,6 +158,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             # special = random.choices(population=population + [None], weights=weights, k=1)[0]
 
             # The old way of doing this was unhinged
+            # So is this though
             # Here we pick a float between 0-1 and choose the lowest special in that range
             selected_rarity = random.random()
             special = min([special for special in population if selected_rarity < special.rarity], key=lambda special: special.rarity, default=None) 
