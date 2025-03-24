@@ -119,6 +119,19 @@ def draw_card(ball_instance: "BallInstance", media_path: str = "./admin_panel/me
         (30, 1870),
         # Modifying the line below is breaking the licence as you are removing credits
         # If you don't want to receive a DMCA, just don't
+
+        # This is MIT-licensed and thus attribution is not required
+        # Also, even if it was, attribution could be given in another form (ie the /about command)
+        # Also DMCA isn't even for licenses, it's for copyright, which this isn't.
+
+        # If the argument is instead that the cards themselves are copyrighted, that makes sense for the artwork
+        # But the background-images are in the repo and thus MIT-licensed
+        # In that case attribution would make sense for the art author but not for the original creator of the source
+
+        # The structure of the cards themselves are not particularly unique (see Pokemon, Yu-Gi-Oh, Magic) all of which use similar structures
+        # And is also liekly not copyrightable
+        # Even if it was, those rights would have been waived by the license which is (as mentioned) MIT
+        
         "Created by El Laggron\n" f"Artwork author: {ball_credits}",
         font=credits_font,
         fill=credits_color,
