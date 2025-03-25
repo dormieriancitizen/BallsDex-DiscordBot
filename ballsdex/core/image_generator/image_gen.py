@@ -74,9 +74,12 @@ def draw_card(ball_instance: "BallInstance", media_path: str = "./admin_panel/me
         stroke_width=2,
         stroke_fill=(0, 0, 0, 255),
     )
-    for i, line in enumerate(textwrap.wrap(f"Ability: {ball.capacity_name}", width=26)):
+
+    cap_name = textwrap.wrap(f"Ability: {ball.capacity_name}", width=26)
+
+    for i, line in enumerate(cap_name):
         draw.text(
-            (100, 1050 + 100 * i),
+            (100, 1025 + 100 * i),
             line,
             font=capacity_name_font,
             fill=(230, 230, 230, 255),
@@ -85,12 +88,14 @@ def draw_card(ball_instance: "BallInstance", media_path: str = "./admin_panel/me
         )
     for i, line in enumerate(textwrap.wrap(ball.capacity_description, width=32)):
         draw.text(
-            (60, 1300 + 80 * i),
+            (60, 1045 + 100*len(cap_name) + 80*i),
             line,
             font=capacity_description_font,
             stroke_width=1,
             stroke_fill=(0, 0, 0, 255),
         )
+    
+    
     draw.text(
         (320, 1670),
         str(ball_instance.health),

@@ -61,6 +61,7 @@ services:
       - ./:/code
       - /opt/IndividualDexData/media:/code/admin_panel/media
       - /opt/IndividualDexData/config.yml:/code/config.yml
+      - /opt/IndividualDexData/ballsdex.log:/code/ballsdex.log
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -80,6 +81,7 @@ services:
         - *postgres-db
         - *postgres-user
         - POSTGRES_PASSWORD
+      # command: ["sleep", "100000"]
       volumes:  # Persist the db data
         - /opt/IndividualDexData/database-data:/var/lib/postgresql/data
       healthcheck:
