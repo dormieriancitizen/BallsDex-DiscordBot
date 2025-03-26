@@ -60,7 +60,9 @@ class CountryBall:
         try:
             permissions = channel.permissions_for(channel.guild.me)
             if permissions.attach_files and permissions.send_messages:
-                spawn_msg = "<@&1343655039834652875>\n" + random.choice(settings.spawn_msgs).format("",settings.collectible_name,"",settings.plural_collectible_name)
+                spawn_msg = "<@&1343655039834652875>\n" + random.choice(
+                    settings.spawn_msgs
+                ).format("", settings.collectible_name, "", settings.plural_collectible_name)
 
                 self.message = await channel.send(
                     spawn_msg,

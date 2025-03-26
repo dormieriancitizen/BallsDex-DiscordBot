@@ -13,8 +13,8 @@ from ballsdex.settings import settings
 from .balls import Balls as BallsGroup
 from .blacklist import Blacklist as BlacklistGroup
 from .blacklist import BlacklistGuild as BlacklistGuildGroup
-from .history import History as HistoryGroup
 from .custom import Custom as CustomGroup
+from .history import History as HistoryGroup
 from .info import Info as InfoGroup
 from .logs import Logs as LogsGroup
 

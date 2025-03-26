@@ -1,14 +1,14 @@
 import asyncio
 import logging
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
 from tortoise import Tortoise
 
-from ballsdex.core.dev import pagify, send_interactive
+from ballsdex.core.dev import pagify, send_interactive  # pyright: ignore
 from ballsdex.core.models import Ball
 from ballsdex.settings import settings, update_settings
 
@@ -91,10 +91,13 @@ class Core(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def reloadconf(self,ctx: commands.Context):
+    async def reloadconf(self, ctx: commands.Context):
         update_settings(Path("/code/config.yml"))
         await ctx.message.add_reaction("✅")
-        await ctx.message.reply("Config values have been updated, however note that some changes may require a restart.")
+        await ctx.message.reply(
+            """Config values have been updated.
+            Some changes may require a restart."""
+        )
 
     @commands.command()
     @commands.is_owner()
@@ -200,7 +203,7 @@ class Core(commands.Cog):
 
         async def update_message_loop():
             nonlocal uploaded
-            for i in range(5 * 12 * 10):  # timeout progress after 10 minutes
+            for _ in range(5 * 12 * 10):  # timeout progress after 10 minutes
                 print(f"Updating msg {uploaded}")
                 await msg.edit(
                     content=f"Uploading emojis... ({uploaded}/{len(to_upload)})",

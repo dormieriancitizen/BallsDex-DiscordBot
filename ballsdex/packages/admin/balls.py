@@ -63,16 +63,16 @@ class Balls(app_commands.Group):
 
         async def update_message_loop():
             nonlocal spawned
-            for i in range(5 * 12 * 10):  # timeout progress after 10 minutes
+            for _ in range(5 * 12 * 10):  # timeout progress after 10 minutes
                 await interaction.followup.edit_message(
-                    "@original",  # type: ignore
+                    "@original",  # pyright: ignore
                     content=f"Spawn bomb in progress in {channel.mention}, "
                     f"{settings.collectible_name.title()}: {countryball or 'Random'}\n"
                     f"{spawned}/{n} spawned ({round((spawned / n) * 100)}%)",
                 )
                 await asyncio.sleep(5)
             await interaction.followup.edit_message(
-                "@original", content="Spawn bomb seems to have timed out."  # type: ignore
+                "@original", content="Spawn bomb seems to have timed out."  # pyright: ignore
             )
 
         await interaction.response.send_message(
@@ -80,7 +80,7 @@ class Balls(app_commands.Group):
         )
         task = interaction.client.loop.create_task(update_message_loop())
         try:
-            for i in range(n):
+            for _ in range(n):
                 if not countryball:
                     ball = await countryball_cls.get_random()
                 else:
@@ -88,11 +88,11 @@ class Balls(app_commands.Group):
                 ball.special = special
                 ball.atk_bonus = atk_bonus
                 ball.hp_bonus = hp_bonus
-                result = await ball.spawn(channel)
+                result = await ball.spawn(channel)  # pyright: ignore
                 if not result:
                     task.cancel()
                     await interaction.followup.edit_message(
-                        "@original",  # type: ignore
+                        "@original",  # pyright: ignore
                         content=f"A {settings.collectible_name} failed to spawn, probably "
                         "indicating a lack of permissions to send messages "
                         f"or upload files in {channel.mention}.",
@@ -231,7 +231,7 @@ class Balls(app_commands.Group):
             return
         await interaction.response.defer(ephemeral=True, thinking=True)
 
-        player, created = await Player.get_or_create(discord_id=user.id)
+        player, _ = await Player.get_or_create(discord_id=user.id)
         instance = await BallInstance.create(
             ball=countryball,
             player=player,

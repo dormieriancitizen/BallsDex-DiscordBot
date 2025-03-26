@@ -263,7 +263,7 @@ class Balls(commands.GroupCog, group_name=settings.players_group_cog_name):
         # Set of ball IDs owned by the player
         filters = {"player__discord_id": user_obj.id, "ball__enabled": True}
         if special:
-            filters["special"] = special
+            filters["special"] = special  # pyright: ignore
             bot_countryballs = {
                 x: y.emoji_id
                 for x, y in balls.items()

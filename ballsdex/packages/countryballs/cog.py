@@ -69,7 +69,6 @@ class CountryBallsSpawner(commands.Cog):
             del self.cache[guild.id]
             return
 
-
         for _ in range(settings.per_spawn):
             ball = await CountryBall.get_random()
             ball.algo = algo

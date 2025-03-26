@@ -82,7 +82,7 @@ class Config(commands.GroupCog):
         Disable or enable countryballs spawning.
         """
         guild = cast(discord.Guild, interaction.guild)  # guild-only command
-        config, created = await GuildConfig.get_or_create(guild_id=interaction.guild_id)
+        config, _ = await GuildConfig.get_or_create(guild_id=interaction.guild_id)
         if config.enabled:
             config.enabled = False  # type: ignore
             await config.save()

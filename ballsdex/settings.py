@@ -171,7 +171,9 @@ def read_settings(path: "Path"):
     settings.spawn_msgs = content["catch"]["spawn_msgs"] or ["A wild {1} appeared!"]
     settings.caught_msgs = content["catch"]["caught_msgs"] or ["{0} You caught **{2}**!"]
     settings.wrong_msgs = content["catch"]["wrong_msgs"] or ["{0} Wrong name!"]
-    settings.slow_msgs = content["catch"]["slow_msgs"] or ["{0} Sorry, this {1} was caught already!"]
+    settings.slow_msgs = content["catch"]["slow_msgs"] or [
+        "{0} Sorry, this {1} was caught already!"
+    ]
 
     settings.packages = content.get("packages") or [
         "ballsdex.packages.admin",

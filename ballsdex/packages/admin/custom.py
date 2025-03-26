@@ -1,7 +1,6 @@
-from codecs import BOM_UTF16_BE
-from pathlib import Path
 import logging
 import re
+from pathlib import Path
 
 import discord
 from discord import app_commands
@@ -9,16 +8,14 @@ from tortoise.exceptions import BaseORMException
 
 from ballsdex.core.bot import BallsDexBot
 from ballsdex.core.models import Ball
-from ballsdex.core.utils.transformers import (
-    EconomyTransform,
-    RegimeTransform,
-)
+from ballsdex.core.utils.transformers import EconomyTransform, RegimeTransform
 from ballsdex.settings import settings
 
 log = logging.getLogger("ballsdex.packages.admin.balls")
 FILENAME_RE = re.compile(r"^(.+)(\.\S+)$")
 
 balls: dict[int, Ball] = {}
+
 
 async def save_file(attachment: discord.Attachment) -> Path:
     path = Path(f"./admin_panel/media/{attachment.filename}")
@@ -32,10 +29,12 @@ async def save_file(attachment: discord.Attachment) -> Path:
     await attachment.save(path)
     return path.relative_to("./admin_panel/media/")
 
+
 class Custom(app_commands.Group):
     """
     Countryballs management
     """
+
     @app_commands.command(name="create")
     @app_commands.checks.has_any_role(*settings.root_role_ids)
     async def balls_create(
@@ -93,32 +92,38 @@ class Custom(app_commands.Group):
             )
             return
 
+        if cart is None or spart is None:
+            await interaction.response.send_message(
+                "`Cart` and `Spart` are required", ephemeral=True
+            )
+            return
+
         if catch_names is None:
             catch_names = ""
 
         # emoji = interaction.client.get_emoji(int(emoji_id))
         # if not emoji:
-            # await interaction.response.send_message(
-                # "The bot does not have access to the given emoji.", ephemeral=True
-            # )
-            # return
+        # await interaction.response.send_message(
+        # "The bot does not have access to the given emoji.", ephemeral=True
+        # )
+        # return
 
         if short_name is None:
             short_name = ""
 
         await interaction.response.defer(ephemeral=True, thinking=True)
 
-        default_path = Path("./admin_panel/media/Card_Test_Placeholder.jpg")
-        missing_default = ""
-        if not cart and not default_path.exists():
-            missing_default = (
-                "**Warning:** The default card art is not set. This will result in errors when "
-                f"attempting to look at this {settings.collectible_name}. You can edit this on the "
-                f"web panel or add an image at `{default_path.as_posix()}`.\n"
-            )
+        # default_path = Path("./admin_panel/media/Card_Test_Placeholder.jpg")
+        # missing_default = ""
+        # if not cart and not default_path.exists():
+        #     missing_default = (
+        #         "**Warning:** The default card art is not set. This will result in errors when "
+        #         f"attempting to look at this {settings.collectible_name}. You can edit this on "
+        #         f"the web panel or add an image at `{default_path.as_posix()}`.\n"
+        #     )
 
         try:
-            cart_path = await save_file(cart) if cart else default_path
+            cart_path = await save_file(cart)
         except Exception as e:
             log.exception("Failed saving file when creating countryball", exc_info=True)
             await interaction.followup.send(
@@ -127,7 +132,7 @@ class Custom(app_commands.Group):
                 "The full error is in the bot logs."
             )
             return
-        
+
         try:
             spart_path = await save_file(spart)
         except Exception as e:
@@ -166,7 +171,7 @@ class Custom(app_commands.Group):
             )
 
             return
-        
+
         files = [await cart.to_file()]
         if spart:
             files.append(await spart.to_file())
@@ -179,7 +184,6 @@ class Custom(app_commands.Group):
         await interaction.followup.send(
             f"Successfully created a {settings.collectible_name} with ID {ball.pk}! "
             f"The internal cache was reloaded.\n{admin_url}"
-            f"{missing_default}\n"
             f"{name=} regime={regime.name} economy={economy.name if economy else None} "
             f"{health=} {attack=} {rarity=} {enabled=} {tradeable=} emoji={emoji_id}",
             files=files,
@@ -194,7 +198,10 @@ class Custom(app_commands.Group):
     ):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
-        rarities: dict[str, float] = {ballDetails.split(";")[0][0:48]: float(ballDetails.split(";")[1]) for ballDetails in rarity_command.split("|")}
+        rarities: dict[str, float] = {
+            ballDetails.split(";")[0][0:48]: float(ballDetails.split(";")[1])
+            for ballDetails in rarity_command.split("|")
+        }
 
         balls = await Ball.all()
         bot_countryballs: dict[str, Ball] = {ball.country: ball for ball in balls}
@@ -205,8 +212,8 @@ class Custom(app_commands.Group):
             if country in bot_countryballs:
                 msg += f"Set rarity of {country} to {rarity}\n"
                 bot_countryballs[country].rarity = rarity
-                await bot_countryballs[country].save(update_fields=("rarity"),force_update=True)
+                await bot_countryballs[country].save(update_fields=("rarity"), force_update=True)
             else:
                 msg += f"{settings.collectible_name} {country} not present in table\n"
-        
+
         await interaction.followup.send(msg)

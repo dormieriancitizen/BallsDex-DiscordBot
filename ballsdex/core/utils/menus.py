@@ -290,7 +290,7 @@ class _MenuMeta(type):
         if inherit_buttons:
             # walk MRO to get all buttons even in subclasses
             for base in reversed(new_cls.__mro__):
-                for elem, value in base.__dict__.items():
+                for elem, value in base.__dict__.items():  # pyright: ignore
                     try:
                         value.__menu_button__
                     except AttributeError:
@@ -298,7 +298,7 @@ class _MenuMeta(type):
                     else:
                         buttons.append(value)
         else:
-            for elem, value in attrs.items():
+            for elem, value in attrs.items():  # pyright: ignore
                 try:
                     value.__menu_button__
                 except AttributeError:
@@ -1006,7 +1006,7 @@ class MenuPages(Menu):
         page = await self._source.get_page(page_number)
         self.current_page = page_number
         kwargs = await self._get_kwargs_from_page(page)
-        await self.message.edit(**kwargs)
+        await self.message.edit(**kwargs)  # pyright: ignore
 
     async def send_initial_message(self, ctx, channel):
         """|coro|
@@ -1238,7 +1238,7 @@ class AsyncIteratorPageSource(PageSource):
     async def _iterate(self, n):
         it = self.iterator
         cache = self._cache
-        for i in range(0, n):
+        for _ in range(0, n):
             try:
                 elem = await it.__anext__()
             except StopAsyncIteration:

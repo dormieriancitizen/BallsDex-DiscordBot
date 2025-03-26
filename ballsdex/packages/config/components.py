@@ -53,7 +53,7 @@ class AcceptTOSView(View):
         emoji="\N{HEAVY CHECK MARK}\N{VARIATION SELECTOR-16}",
     )
     async def accept_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        config, created = await GuildConfig.get_or_create(guild_id=interaction.guild_id)
+        config, _ = await GuildConfig.get_or_create(guild_id=interaction.guild_id)
         config.spawn_channel = self.channel.id  # type: ignore
         config.enabled = True
         await config.save()

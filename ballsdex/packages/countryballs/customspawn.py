@@ -1,15 +1,15 @@
 import asyncio
 import logging
 import random
-from abc import abstractmethod
 from collections import deque, namedtuple
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import discord
 from discord.utils import format_dt
 
+from ballsdex.packages.countryballs.spawn import BaseSpawnManager
 from ballsdex.settings import settings
 
 if TYPE_CHECKING:
@@ -20,7 +20,6 @@ log = logging.getLogger("ballsdex.packages.countryballs")
 SPAWN_CHANCE_RANGE = (20, 55)
 CachedMessage = namedtuple("CachedMessage", ["content", "author_id"])
 
-from ballsdex.packages.countryballs.spawn import BaseSpawnManager
 
 @dataclass
 class SpawnCooldown:

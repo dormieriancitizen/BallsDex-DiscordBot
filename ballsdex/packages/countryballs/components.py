@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import math
 import random
-import asyncio
 from datetime import datetime
 from typing import TYPE_CHECKING, cast
 
@@ -51,8 +51,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         await interaction.response.defer(thinking=True)
 
         player, _ = await Player.get_or_create(discord_id=interaction.user.id)
-        member = cast(discord.Member, interaction.user)
-        has_caught_before =  await BallInstance.filter(player=player, ball=self.ball.model).exists()
+        has_caught_before = await BallInstance.filter(player=player, ball=self.ball.model).exists()
 
         if self.ball.model.catch_names:
             possible_names = (self.ball.name.lower(), *self.ball.model.catch_names.split(";"))
@@ -71,17 +70,27 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         # There are other "fancy" quotes as well but these are most common
         if cname in possible_names:
             cooldown = None
-            if settings.caught_cooldown>0 and has_caught_before:
-                cooldown = await interaction.channel.send(f"{interaction.user.mention} You already have this {settings.collectible_name}! Applying a {settings.caught_cooldown+5} delay before catching.")
-                await asyncio.sleep(settings.caught_cooldown)
-                await cooldown.delete()
+            if settings.caught_cooldown > 0 and has_caught_before:
+                if isinstance(interaction.channel, discord.TextChannel):
+                    cooldown = await interaction.channel.send(
+                        f"{interaction.user.mention} "
+                        f"You already have this {settings.collectible_name}"
+                        f"! Applying a {settings.caught_cooldown + 5} delay before catching."
+                    )
+                    await asyncio.sleep(settings.caught_cooldown)
+                    await cooldown.delete()
 
             if self.ball.caught:
-                slow_msg = random.choice(settings.slow_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name,settings.plural_collectible_name)
+                slow_msg = random.choice(settings.slow_msgs).format(
+                    interaction.user.mention,
+                    settings.collectible_name,
+                    self.ball.name,
+                    settings.plural_collectible_name,
+                )
                 await interaction.followup.send(
                     slow_msg,
                 )
-                
+
                 return
 
             self.ball.caught = True
@@ -92,26 +101,39 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             special = ""
             if ball.specialcard and ball.specialcard.catch_phrase:
                 special += f"*{ball.specialcard.catch_phrase}*\n"
-            
+
             if not has_caught_before:
                 special += (
                     f"This is a **new {settings.collectible_name}** "
                     "that has been added to your completion!"
                 )
-            
-            catch_msg = random.choice(settings.caught_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name,settings.plural_collectible_name)+" "
+
+            catch_msg = (
+                random.choice(settings.caught_msgs).format(
+                    interaction.user.mention,
+                    settings.collectible_name,
+                    self.ball.name,
+                    settings.plural_collectible_name,
+                )
+                + " "
+            )
 
             await interaction.followup.send(
-                catch_msg+
-                f"`(#{ball.pk:0X}, {ball.attack_bonus:+}%/{ball.health_bonus:+}%)`\n\n"+
-                f"{special}",
+                catch_msg
+                + f"`(#{ball.pk:0X}, {ball.attack_bonus:+}%/{ball.health_bonus:+}%)`\n\n"
+                + f"{special}",
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
             )
 
             self.button.disabled = True
             await interaction.followup.edit_message(self.ball.message.id, view=self.button.view)
         else:
-            wrong_msg = random.choice(settings.wrong_msgs).format(interaction.user.mention,settings.collectible_name,self.ball.name,settings.plural_collectible_name)
+            wrong_msg = random.choice(settings.wrong_msgs).format(
+                interaction.user.mention,
+                settings.collectible_name,
+                self.ball.name,
+                settings.plural_collectible_name,
+            )
             await interaction.followup.send(
                 wrong_msg,
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
@@ -121,7 +143,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
     async def catch_ball(
         self, bot: "BallsDexBot", user: discord.Member
     ) -> tuple[BallInstance, bool]:
-        player, created = await Player.get_or_create(discord_id=user.id)
+        player, _ = await Player.get_or_create(discord_id=user.id)
 
         # stat may vary by +/- 20% of base stat
         bonus_attack = (
@@ -136,9 +158,9 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         )
 
         # check if we can spawn cards with a special background
-        special: Special = self.ball.special
+        special: Special | None = self.ball.special
         population = [
-            x 
+            x
             for x in specials.values()
             # handle null start/end dates with infinity times
             if (x.start_date or datetime.min.replace(tzinfo=get_default_timezone()))
@@ -151,7 +173,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             # since the rarity field is a value between 0 and 1, 1 being no common
             # and 0 only common, we get the remaining value by doing (1-rarity)
             # We then sum each value for each current event, and we should get an algorithm
-            # that kinda makes sense. 
+            # that kinda makes sense.
             # common_weight = sum(1 - x.rarity for x in population)
             # weights = [x.rarity for x in population] + [common_weight]
             # None is added representing the common countryball
@@ -161,8 +183,11 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             # So is this though
             # Here we pick a float between 0-1 and choose the lowest special in that range
             selected_rarity = random.random()
-            special = min([special for special in population if selected_rarity < special.rarity], key=lambda special: special.rarity, default=None) 
-            
+            special = min(
+                [special for special in population if selected_rarity < special.rarity],
+                key=lambda special: special.rarity,
+                default=None,
+            )
 
         is_new = not await BallInstance.filter(player=player, ball=self.ball.model).exists()
         ball = await BallInstance.create(
