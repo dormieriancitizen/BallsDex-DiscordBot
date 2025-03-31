@@ -79,7 +79,6 @@ def draw_card(ball_instance: "BallInstance", media_path: str = "./admin_panel/me
     cap_name = textwrap.wrap(f"Ability: {ball.capacity_name}", width=26)
 
     for i, line in enumerate(cap_name):
-        # width = capacity_name_font.getlength(line)
         draw.text(
             (60, (1035 + 100 * i)),
             line,
