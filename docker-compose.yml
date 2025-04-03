@@ -15,7 +15,7 @@ services:
       - *postgres-url
     depends_on:
       migration:
-        condition: service_started
+        condition: service_completed_successfully
       postgres-db:
         condition: service_healthy
     volumes:
@@ -39,7 +39,7 @@ services:
       - DJANGO_SETTINGS_MODULE=admin_panel.settings.production
     depends_on:
       migration:
-        condition: service_started
+        condition: service_completed_successfully
       postgres-db:
         condition: service_healthy
     volumes:

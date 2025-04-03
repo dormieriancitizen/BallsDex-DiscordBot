@@ -1,4 +1,6 @@
-FROM python:3.13.2-alpine
+# syntax=docker/dockerfile:1
+
+FROM python:3.13.2-alpine3.21
 
 ENV PYTHONFAULTHANDLER=1 \
   PYTHONUNBUFFERED=1 \
@@ -20,7 +22,3 @@ RUN poetry config virtualenvs.create false && poetry install --no-interaction --
 COPY . ./
 
 RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
-
-# wait for postgres to be ready
-# CMD ["sleep", "1"]
-# replaced with depends-on
