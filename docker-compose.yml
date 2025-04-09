@@ -22,9 +22,9 @@ services:
     #   - "15260:15260"
     volumes:
       - ./:/code
-      - ../data/media:/code/admin_panel/media
-      - ../data/config.yml:/code/config.yml
-      - ../data/ballsdex.log:/code/ballsdex.log
+      - /opt/IndividualDexData/media:/code/admin_panel/media
+      - /opt/IndividualDexData/config.yml:/code/config.yml
+      - /opt/IndividualDexData/ballsdex.log:/code/ballsdex.log
     tty: true
     working_dir: /code/
     command: python3 -m ballsdex
@@ -45,10 +45,10 @@ services:
         condition: service_healthy
     volumes:
       - ./:/code
-      - ../data/media:/code/admin_panel/media
-      - ../data/config.yml:/code/config.yml
-      - ../data/ballsdex.log:/code/ballsdex.log
-      - ../data/django_production.py:/code/admin_panel/admin_panel/settings/production.py
+      - /opt/IndividualDexData/media:/code/admin_panel/media
+      - /opt/IndividualDexData/config.yml:/code/config.yml
+      - /opt/IndividualDexData/ballsdex.log:/code/ballsdex.log
+      - /opt/IndividualDexData/django_production.py:/code/admin_panel/admin_panel/settings/production.py
     tty: true
     working_dir: /code/admin_panel
     command: "python3 -m uvicorn admin_panel.asgi:application --host 0.0.0.0"
@@ -60,9 +60,9 @@ services:
       - *postgres-url
     volumes:
       - ./:/code
-      - ../data/media:/code/admin_panel/media
-      - ../data/config.yml:/code/config.yml
-      - ../data/ballsdex.log:/code/ballsdex.log
+      - /opt/IndividualDexData/media:/code/admin_panel/media
+      - /opt/IndividualDexData/config.yml:/code/config.yml
+      - /opt/IndividualDexData/ballsdex.log:/code/ballsdex.log
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -86,7 +86,7 @@ services:
     # ports:
     #   - "5432:5432"
     volumes:  # Persist the db data
-      - ../data/database-data:/var/lib/postgresql/data
+      - /opt/IndividualDexData/database-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ballsdex}"]
       interval: 5s
@@ -98,7 +98,7 @@ services:
     restart: always
     user: postgres:postgres
     volumes:
-      - ../data/pgbackups:/backups
+      - /opt/IndividualDexData/pgbackups:/backups
     depends_on:
       postgres-db:
         condition: service_healthy
