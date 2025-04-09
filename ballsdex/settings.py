@@ -85,6 +85,13 @@ class Settings:
     max_attack_bonus: int = 20
     max_health_bonus: int = 20
 
+    caught_cooldown: int = 10
+    per_spawn: int = 1
+    caught_msgs: list[str] = field(default_factory=list)
+    wrong_msgs: list[str] = field(default_factory=list)
+    slow_msgs: list[str] = field(default_factory=list)
+    spawn_msgs: list[str] = field(default_factory=list)
+
     # /about
     about_description: str = ""
     github_link: str = ""
@@ -158,6 +165,15 @@ def read_settings(path: "Path"):
     settings.max_favorites = content.get("max-favorites", 50)
     settings.max_attack_bonus = content.get("max-attack-bonus", 20)
     settings.max_health_bonus = content.get("max-health-bonus", 20)
+
+    settings.caught_cooldown = content["catch"]["caught_cooldown"] or 10
+    settings.per_spawn = content["catch"]["per_spawn"] or 1
+    settings.spawn_msgs = content["catch"]["spawn_msgs"] or ["A wild {1} appeared!"]
+    settings.caught_msgs = content["catch"]["caught_msgs"] or ["{0} You caught **{2}**!"]
+    settings.wrong_msgs = content["catch"]["wrong_msgs"] or ["{0} Wrong name!"]
+    settings.slow_msgs = content["catch"]["slow_msgs"] or [
+        "{0} Sorry, this {1} was caught already!"
+    ]
 
     settings.packages = content.get("packages") or [
         "ballsdex.packages.admin",
@@ -238,6 +254,21 @@ max-attack-bonus: 20
 # the highest/lowest possible health bonus, do not leave empty
 # this cannot be smaller than 0, enter a positive number
 max-health-bonus: 20
+
+catch:
+  caught_cooldown: 10
+  per_spawn: 2
+  # Add any number of messages to each of these categories. The bot will select a random
+  # one each time.
+  # {0} is mention. {1} is collectible name. {2} is ball name.
+  caught_msgs:
+    - "{0} You caught **{2}**!"
+  wrong_msgs:
+    - "{0} Wrong name!"
+  slow_msgs:
+    - "{0} Sorry, this {1} was caught already!"
+  spawn_msgs:
+    - "A wild {1} appeared!"
 
 # enables the /admin command
 admin-command:
