@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import math
 import random
-import asyncio
 import string
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -60,7 +60,9 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         await interaction.response.defer(thinking=True)
 
         player, _ = await Player.get_or_create(discord_id=interaction.user.id)
-        has_caught_before: bool = await BallInstance.filter(player=player, ball=self.view.model).exists()
+        has_caught_before: bool = await BallInstance.filter(
+            player=player, ball=self.view.model
+        ).exists()
 
         if not self.view.is_name_valid(self.name.value):
             # Wrong name
@@ -82,21 +84,21 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         if settings.caught_cooldown > 0 and has_caught_before:
             # Delay if has caught already
             if isinstance(interaction.channel, discord.TextChannel):
-                    cooldown_msg = await interaction.channel.send(
-                        f"{interaction.user.mention} "
-                        f"You already have this {settings.collectible_name}"
-                        f"! Applying a {settings.caught_cooldown} delay before catching."
-                    )
+                cooldown_msg = await interaction.channel.send(
+                    f"{interaction.user.mention} "
+                    f"You already have this {settings.collectible_name}"
+                    f"! Applying a {settings.caught_cooldown} delay before catching."
+                )
 
-                    await asyncio.sleep(settings.caught_cooldown)
-                    await cooldown_msg.delete()
+                await asyncio.sleep(settings.caught_cooldown)
+                await cooldown_msg.delete()
 
         if self.view.caught:
             slow_msg = random.choice(settings.slow_msgs).format(
-                    interaction.user.mention,
-                    settings.collectible_name,
-                    self.view.name,
-                    settings.plural_collectible_name,
+                interaction.user.mention,
+                settings.collectible_name,
+                self.view.name,
+                settings.plural_collectible_name,
             )
 
             await interaction.followup.send(
@@ -115,7 +117,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             self.view.get_catch_message(ball, has_caught_before, interaction.user.mention),
             allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
         )
-        await interaction.followup.edit_message(self.view.message.id, view=self.view)            
+        await interaction.followup.edit_message(self.view.message.id, view=self.view)
 
 
 class BallSpawnView(View):
@@ -245,7 +247,7 @@ class BallSpawnView(View):
                 spawn_msg = "<@&1343655039834652875>\n" + random.choice(
                     settings.spawn_msgs
                 ).format("", settings.collectible_name, "", settings.plural_collectible_name)
-            
+
                 self.message = await channel.send(
                     spawn_msg,
                     view=self,
@@ -289,7 +291,7 @@ class BallSpawnView(View):
         cname = cname.replace("\u201d", '"')
         return cname in possible_names
 
-    async def get_random_special(self):
+    async def get_random_special(self) -> Special | None:
         population = [
             x
             for x in specials.values()
@@ -311,7 +313,11 @@ class BallSpawnView(View):
 
             weights = [x.rarity for x in population] + [common_weight]
             # None is added representing the common countryball
-            special = random.choices(population=population + [None], weights=weights, k=1)[0]
+            special: Special | None = random.choices(
+                population=population + [None], weights=weights, k=1
+            )[0]
+        else:
+            return None
 
         return special
 
@@ -435,16 +441,16 @@ class BallSpawnView(View):
             )
 
         catch_msg = (
-                random.choice(settings.caught_msgs).format(
-                    mention,
-                    settings.collectible_name,
-                    self.name,
-                    settings.plural_collectible_name,
-                )
-                + " "
+            random.choice(settings.caught_msgs).format(
+                mention,
+                settings.collectible_name,
+                self.name,
+                settings.plural_collectible_name,
+            )
+            + " "
         )
 
         return (
-            catch_msg +
-            f"`(#{ball.pk:0X}, {ball.attack_bonus:+}%/{ball.health_bonus:+}%)`\n\n{text}"
+            catch_msg
+            + f"`(#{ball.pk:0X}, {ball.attack_bonus:+}%/{ball.health_bonus:+}%)`\n\n{text}"
         )
