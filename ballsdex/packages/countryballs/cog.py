@@ -70,7 +70,9 @@ class CountryBallsSpawner(commands.Cog):
             return
         ball = await BallSpawnView.get_random(self.bot)
         ball.algo = algo
-        await ball.spawn(cast(discord.TextChannel, channel))
+
+        for _ in range(0,settings.per_spawn):
+            await ball.spawn(cast(discord.TextChannel, channel))
 
     @commands.Cog.listener()
     async def on_ballsdex_settings_change(

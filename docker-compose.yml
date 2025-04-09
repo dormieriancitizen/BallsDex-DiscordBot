@@ -33,11 +33,11 @@ services:
     image: ballsdex
     build: .
     ports:
-      - "8000:8000"
+      - "31617:8000"
     environment:
       - *postgres-url
       # if serving the admin panel online, copy the file "production.example.py" and uncomment
-      # - DJANGO_SETTINGS_MODULE=admin_panel.settings.production
+      - DJANGO_SETTINGS_MODULE=admin_panel.settings.production
     depends_on:
       migration:
         condition: service_completed_successfully
