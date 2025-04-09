@@ -282,6 +282,32 @@ class BallSpawnView(View):
         cname = cname.replace("\u201d", '"')
         return cname in possible_names
 
+    async def get_random_special(self):
+        population = [
+            x
+            for x in specials.values()
+            # handle null start/end dates with infinity times
+            if (x.start_date or datetime.min.replace(tzinfo=get_default_timezone()))
+            <= tortoise_now()
+            <= (x.end_date or datetime.max.replace(tzinfo=get_default_timezone()))
+        ]
+        if not special and population:
+            # Here we try to determine what should be the chance of having a common card
+            # since the rarity field is a value between 0 and 1, 1 being no common
+            # and 0 only common, we get the remaining value by doing (1-rarity)
+            # We then sum each value for each current event, and we should get an algorithm
+            # that kinda makes sense.
+            common_weight = 1 - sum(x.rarity for x in population)
+
+            if common_weight < 0:
+                common_weight = 0
+``
+            weights = [x.rarity for x in population] + [common_weight]
+            # None is added representing the common countryball
+            special = random.choices(population=population + [None], weights=weights, k=1)[0]
+
+        return special
+
     async def catch_ball(
         self,
         user: discord.User | discord.Member,
@@ -351,25 +377,8 @@ class BallSpawnView(View):
 
         # check if we can spawn cards with a special background
         special = self.special
-        population = [
-            x
-            for x in specials.values()
-            # handle null start/end dates with infinity times
-            if (x.start_date or datetime.min.replace(tzinfo=get_default_timezone()))
-            <= tortoise_now()
-            <= (x.end_date or datetime.max.replace(tzinfo=get_default_timezone()))
-        ]
-        if not special and population:
-            # Here we try to determine what should be the chance of having a common card
-            # since the rarity field is a value between 0 and 1, 1 being no common
-            # and 0 only common, we get the remaining value by doing (1-rarity)
-            # We then sum each value for each current event, and we should get an algorithm
-            # that kinda makes sense.
-            common_weight = sum(1 - x.rarity for x in population)
-
-            weights = [x.rarity for x in population] + [common_weight]
-            # None is added representing the common countryball
-            special = random.choices(population=population + [None], weights=weights, k=1)[0]
+        if special is None:
+            special = self.get_random_special()
 
         ball = await BallInstance.create(
             ball=self.model,

@@ -20,10 +20,11 @@ services:
         condition: service_healthy
     # ports:
     #   - "15260:15260"
-    networks:
-      - internal
     volumes:
-      - "./:/code"
+      - ./:/code
+      - ../data/media:/code/admin_panel/media
+      - ../data/config.yml:/code/config.yml
+      - ../data/ballsdex.log:/code/ballsdex.log
     tty: true
     working_dir: /code/
     command: python3 -m ballsdex
@@ -33,8 +34,6 @@ services:
     build: .
     ports:
       - "8000:8000"
-    networks:
-      - internal
     environment:
       - *postgres-url
       # if serving the admin panel online, copy the file "production.example.py" and uncomment
@@ -45,7 +44,11 @@ services:
       postgres-db:
         condition: service_healthy
     volumes:
-      - "./:/code"
+      - ./:/code
+      - ../data/media:/code/admin_panel/media
+      - ../data/config.yml:/code/config.yml
+      - ../data/ballsdex.log:/code/ballsdex.log
+      - ../data/django_production.py:/code/admin_panel/admin_panel/settings/production.py
     tty: true
     working_dir: /code/admin_panel
     command: "python3 -m uvicorn admin_panel.asgi:application --host 0.0.0.0"
@@ -53,12 +56,13 @@ services:
   migration:
     image: ballsdex
     build: .
-    networks:
-      - internal
     environment:
       - *postgres-url
     volumes:
       - ./:/code
+      - ../data/media:/code/admin_panel/media
+      - ../data/config.yml:/code/config.yml
+      - ../data/ballsdex.log:/code/ballsdex.log
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -81,10 +85,8 @@ services:
     # WARNING: before exposing ports, change the default db password in the .env file!
     # ports:
     #   - "5432:5432"
-    networks:
-      - internal
     volumes:  # Persist the db data
-      - database-data:/var/lib/postgresql/data
+      - ../data/database-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ballsdex}"]
       interval: 5s
@@ -96,12 +98,10 @@ services:
     restart: always
     user: postgres:postgres
     volumes:
-      - ./pgbackups:/backups
+      - ../data/pgbackups:/backups
     depends_on:
       postgres-db:
         condition: service_healthy
-    networks:
-      - internal
     environment:
       - *postgres-db
       - *postgres-user
@@ -125,10 +125,3 @@ services:
   #     - ./gatewayproxy/config.json:/config.json
   #   networks:
   #     - internal
-
-volumes:
-  database-data:
-  cache-data:
-
-networks:
-  internal:
