@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import math
 import random
+import asyncio
 import string
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -59,14 +60,14 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         await interaction.response.defer(thinking=True)
 
         player, _ = await Player.get_or_create(discord_id=interaction.user.id)
-        has_caught_before: bool = await BallInstance.filter(player=player, ball=self.ball.model).exists()
+        has_caught_before: bool = await BallInstance.filter(player=player, ball=self.view.model).exists()
 
         if not self.view.is_name_valid(self.name.value):
             # Wrong name
             wrong_msg = random.choice(settings.wrong_msgs).format(
                 interaction.user.mention,
                 settings.collectible_name,
-                self.ball.name,
+                self.view.name,
                 settings.plural_collectible_name,
             )
 
@@ -75,6 +76,8 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
                 ephemeral=False,
             )
+
+            return
 
         if settings.caught_cooldown > 0 and has_caught_before:
             # Delay if has caught already
@@ -92,7 +95,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             slow_msg = random.choice(settings.slow_msgs).format(
                     interaction.user.mention,
                     settings.collectible_name,
-                    self.ball.name,
+                    self.view.name,
                     settings.plural_collectible_name,
             )
 
@@ -239,8 +242,12 @@ class BallSpawnView(View):
         try:
             permissions = channel.permissions_for(channel.guild.me)
             if permissions.attach_files and permissions.send_messages:
+                spawn_msg = "<@&1343655039834652875>\n" + random.choice(
+                    settings.spawn_msgs
+                ).format("", settings.collectible_name, "", settings.plural_collectible_name)
+            
                 self.message = await channel.send(
-                    f"A wild {settings.collectible_name} appeared!",
+                    spawn_msg,
                     view=self,
                     file=discord.File(file_location, filename=file_name),
                 )
@@ -291,7 +298,7 @@ class BallSpawnView(View):
             <= tortoise_now()
             <= (x.end_date or datetime.max.replace(tzinfo=get_default_timezone()))
         ]
-        if not special and population:
+        if population:
             # Here we try to determine what should be the chance of having a common card
             # since the rarity field is a value between 0 and 1, 1 being no common
             # and 0 only common, we get the remaining value by doing (1-rarity)
@@ -301,7 +308,7 @@ class BallSpawnView(View):
 
             if common_weight < 0:
                 common_weight = 0
-``
+
             weights = [x.rarity for x in population] + [common_weight]
             # None is added representing the common countryball
             special = random.choices(population=population + [None], weights=weights, k=1)[0]
@@ -378,7 +385,7 @@ class BallSpawnView(View):
         # check if we can spawn cards with a special background
         special = self.special
         if special is None:
-            special = self.get_random_special()
+            special = await self.get_random_special()
 
         ball = await BallInstance.create(
             ball=self.model,
@@ -429,9 +436,9 @@ class BallSpawnView(View):
 
         catch_msg = (
                 random.choice(settings.caught_msgs).format(
-                    interaction.user.mention,
+                    mention,
                     settings.collectible_name,
-                    ball.name,
+                    self.name,
                     settings.plural_collectible_name,
                 )
                 + " "
