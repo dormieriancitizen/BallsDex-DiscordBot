@@ -199,7 +199,7 @@ def read_settings(path: "Path"):
 
 
 def write_default_settings(path: "Path"):
-    path.write_text(
+    _ = path.write_text(
         """# yaml-language-server: $schema=json-config-ref.json
 
 # paste the bot token after regenerating it here
