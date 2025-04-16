@@ -69,7 +69,7 @@ class CountryBallsSpawner(commands.Cog):
             del self.cache[guild.id]
             return
 
-        for _ in range(settings.per_spawn):
+        for _ in range(1):
             ball = await BallSpawnView.get_random(self.bot)
             ball.algo = algo
             await ball.spawn(cast(discord.TextChannel, channel))
