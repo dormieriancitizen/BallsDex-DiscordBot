@@ -18,8 +18,8 @@ services:
         condition: service_completed_successfully
       postgres-db:
         condition: service_healthy
-    # ports:
-    #   - "15260:15260"
+    ports:
+    - "50677:50677" # Prometheus ports
     volumes:
       - ./:/code
       - /opt/IndividualDexData/media:/code/admin_panel/media
