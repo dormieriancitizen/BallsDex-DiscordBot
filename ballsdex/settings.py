@@ -124,6 +124,10 @@ class Settings:
     client_id: str = ""
     client_secret: str = ""
 
+    # sentry details
+    sentry_dsn: str = ""
+    sentry_environment: str = "production"
+
 
 settings = Settings()
 
@@ -194,6 +198,10 @@ def read_settings(path: "Path"):
         settings.client_id = admin.get("client-id")
         settings.client_secret = admin.get("client-secret")
         settings.admin_url = admin.get("url")
+
+    if sentry := content.get("sentry"):
+        settings.sentry_dsn = sentry.get("dsn")
+        settings.sentry_environment = sentry.get("environment")
 
     log.info("Settings loaded.")
 
@@ -332,6 +340,12 @@ prometheus:
   port: 15260
 
 spawn-manager: ballsdex.packages.countryballs.spawn.SpawnManager
+
+# sentry details, leave empty if you don't know what this is
+# https://sentry.io/ for error tracking
+sentry:
+    dsn: ""
+    environment: "production"
   """  # noqa: W291
     )
 
@@ -348,6 +362,7 @@ def update_settings(path: "Path"):
     add_packages = "packages:" not in content
     add_spawn_manager = "spawn-manager" not in content
     add_django = "Admin panel related settings" not in content
+    add_sentry = "sentry:" not in content
 
     for line in content.splitlines():
         if line.startswith("owners:"):
@@ -435,6 +450,15 @@ admin-panel:
 
 """
 
+    if add_sentry:
+        content += """
+# sentry details, leave empty if you don't know what this is
+# https://sentry.io/ for error tracking
+sentry:
+    dsn: ""
+    environment: "production"
+"""
+
     if any(
         (
             add_owners,
@@ -446,6 +470,7 @@ admin-panel:
             add_packages,
             add_spawn_manager,
             add_django,
+            add_sentry,
         )
     ):
         path.write_text(content)
