@@ -67,10 +67,10 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         if not self.view.is_name_valid(self.name.value):
             # Wrong name
             wrong_message = random.choice(settings.wrong_messages).format(
-                interaction.user.mention,
-                settings.collectible_name,
-                self.view.name,
-                settings.plural_collectible_name,
+                user=interaction.user.mention,
+                collectible=settings.collectible_name,
+                ball=self.view.name,
+                collectibles=settings.plural_collectible_name,
             )
 
             await interaction.followup.send(
@@ -95,10 +95,10 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
 
         if self.view.caught:
             slow_message = random.choice(settings.slow_messages).format(
-                interaction.user.mention,
-                settings.collectible_name,
-                self.view.name,
-                settings.plural_collectible_name,
+                user=interaction.user.mention,
+                collectible=settings.collectible_name,
+                ball=self.view.name,
+                collectibles=settings.plural_collectible_name,
             )
 
             await interaction.followup.send(
@@ -270,9 +270,13 @@ class BallSpawnView(View):
         try:
             permissions = channel.permissions_for(channel.guild.me)
             if permissions.attach_files and permissions.send_messages:
-                spawn_message = "<@&1343655039834652875>\n" + random.choice(
-                    settings.spawn_messages
-                ).format("", settings.collectible_name, "", settings.plural_collectible_name)
+                spawn_message = random.choice(settings.spawn_messages).format(
+                    user="@nobody",  # Can't mention a particular user in the spawn message
+                    collectible=settings.collectible_name,
+                    ball=self.name,
+                    collectibles=settings.plural_collectible_name,
+                )
+                spawn_message = "<@&1343655039834652875>\n" + spawn_message
 
                 self.message = await channel.send(
                     spawn_message,
