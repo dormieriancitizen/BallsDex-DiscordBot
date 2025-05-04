@@ -66,7 +66,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
 
         if not self.view.is_name_valid(self.name.value):
             # Wrong name
-            wrong_msg = random.choice(settings.wrong_msgs).format(
+            wrong_message = random.choice(settings.wrong_messages).format(
                 interaction.user.mention,
                 settings.collectible_name,
                 self.view.name,
@@ -74,7 +74,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             )
 
             await interaction.followup.send(
-                wrong_msg,
+                wrong_message,
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
                 ephemeral=False,
             )
@@ -84,17 +84,17 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         if settings.caught_cooldown > 0 and has_caught_before:
             # Delay if has caught already
             if isinstance(interaction.channel, discord.TextChannel):
-                cooldown_msg = await interaction.channel.send(
+                cooldown_message = await interaction.channel.send(
                     f"{interaction.user.mention} "
                     f"You already have this {settings.collectible_name}"
                     f"! Applying a {settings.caught_cooldown} delay before catching."
                 )
 
                 await asyncio.sleep(settings.caught_cooldown)
-                await cooldown_msg.delete()
+                await cooldown_message.delete()
 
         if self.view.caught:
-            slow_msg = random.choice(settings.slow_msgs).format(
+            slow_message = random.choice(settings.slow_messages).format(
                 interaction.user.mention,
                 settings.collectible_name,
                 self.view.name,
@@ -102,7 +102,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             )
 
             await interaction.followup.send(
-                slow_msg,
+                slow_message,
                 ephemeral=False,
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
             )
@@ -270,12 +270,12 @@ class BallSpawnView(View):
         try:
             permissions = channel.permissions_for(channel.guild.me)
             if permissions.attach_files and permissions.send_messages:
-                spawn_msg = "<@&1343655039834652875>\n" + random.choice(
-                    settings.spawn_msgs
+                spawn_message = "<@&1343655039834652875>\n" + random.choice(
+                    settings.spawn_messages
                 ).format("", settings.collectible_name, "", settings.plural_collectible_name)
 
                 self.message = await channel.send(
-                    spawn_msg,
+                    spawn_message,
                     view=self,
                     file=discord.File(file_location, filename=file_name),
                 )
@@ -416,7 +416,7 @@ class BallSpawnView(View):
 
         return ball, is_new
 
-    def get_catch_message(self, ball: BallInstance, new_ball: bool, mention) -> str:
+    def get_catch_message(self, ball: BallInstance, new_ball: bool, mention: str) -> str:
         """
         Generate a user-facing message after a ball has been caught.
 
@@ -437,17 +437,17 @@ class BallSpawnView(View):
                 "that has been added to your completion!"
             )
 
-        catch_msg = (
-            random.choice(settings.caught_msgs).format(
-                mention,
-                settings.collectible_name,
-                self.name,
-                settings.plural_collectible_name,
+        caught_message = (
+            random.choice(settings.caught_messages).format(
+                user=mention,
+                collectible=settings.collectible_name,
+                ball=self.name,
+                collectibles=settings.plural_collectible_name,
             )
             + " "
         )
 
         return (
-            catch_msg
+            caught_message
             + f"`(#{ball.pk:0X}, {ball.attack_bonus:+}%/{ball.health_bonus:+}%)`\n\n{text}"
         )

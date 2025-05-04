@@ -87,10 +87,6 @@ class Settings:
 
     caught_cooldown: int = 10
     per_spawn: int = 1
-    caught_msgs: list[str] = field(default_factory=list)
-    wrong_msgs: list[str] = field(default_factory=list)
-    slow_msgs: list[str] = field(default_factory=list)
-    spawn_msgs: list[str] = field(default_factory=list)
 
     # /about
     about_description: str = ""
@@ -127,6 +123,11 @@ class Settings:
     # sentry details
     sentry_dsn: str = ""
     sentry_environment: str = "production"
+
+    caught_messages: list[str] = field(default_factory=list)
+    wrong_messages: list[str] = field(default_factory=list)
+    spawn_messages: list[str] = field(default_factory=list)
+    slow_messages: list[str] = field(default_factory=list)
 
 
 settings = Settings()
@@ -172,12 +173,6 @@ def read_settings(path: "Path"):
 
     settings.caught_cooldown = content["catch"]["caught_cooldown"] or 10
     settings.per_spawn = content["catch"]["per_spawn"] or 1
-    settings.spawn_msgs = content["catch"]["spawn_msgs"] or ["A wild {1} appeared!"]
-    settings.caught_msgs = content["catch"]["caught_msgs"] or ["{0} You caught **{2}**!"]
-    settings.wrong_msgs = content["catch"]["wrong_msgs"] or ["{0} Wrong name!"]
-    settings.slow_msgs = content["catch"]["slow_msgs"] or [
-        "{0} Sorry, this {1} was caught already!"
-    ]
 
     settings.packages = content.get("packages") or [
         "ballsdex.packages.admin",
@@ -202,6 +197,14 @@ def read_settings(path: "Path"):
     if sentry := content.get("sentry"):
         settings.sentry_dsn = sentry.get("dsn")
         settings.sentry_environment = sentry.get("environment")
+
+    if catch := content.get("catch"):
+        settings.spawn_messages = catch.get("spawn_msgs") or ["A wild {1} appeared!"]
+        settings.caught_messages = catch.get("caught_msgs") or ["{0} You caught **{2}**!"]
+        settings.wrong_messages = catch.get("wrong_msgs") or ["{0} Wrong name!"]
+        settings.slow_messages = catch.get("slow_msgs") or [
+            "{0} Sorry, this {1} was caught already!"
+        ]
 
     log.info("Settings loaded.")
 
@@ -346,6 +349,20 @@ spawn-manager: ballsdex.packages.countryballs.spawn.SpawnManager
 sentry:
     dsn: ""
     environment: "production"
+
+catch:
+  # Add any number of messages to each of these categories. The bot will select a random
+  # one each time.
+  # {user} is mention. {collectible} is collectible name. {ball} is ball name, and 
+  # {collectibles} is collectible plural.
+  caught_msgs:
+    - "{user} You caught **{ball}**!"
+  wrong_msgs:
+    - "{user} Wrong name!"
+  spawn_msgs:
+    - "A wild {collectible} appeared!"
+  slow_msgs:
+    - "{user} Sorry, this {collectible} was caught already!"
   """  # noqa: W291
     )
 
@@ -363,6 +380,7 @@ def update_settings(path: "Path"):
     add_spawn_manager = "spawn-manager" not in content
     add_django = "Admin panel related settings" not in content
     add_sentry = "sentry:" not in content
+    add_catch_messages = "catch:" not in content
 
     for line in content.splitlines():
         if line.startswith("owners:"):
@@ -459,6 +477,23 @@ sentry:
     environment: "production"
 """
 
+    if add_catch_messages:
+        content += """
+catch:
+  # Add any number of messages to each of these categories. The bot will select a random
+  # one each time.
+  # {user} is mention. {collectible} is collectible name. {ball} is ball name, and
+  # {collectibles} is collectible plural.
+  caught_msgs:
+    - "{user} You caught **{ball}**!"
+  wrong_msgs:
+    - "{user} Wrong name!"
+  spawn_msgs:
+    - "A wild {collectible} appeared!"
+  slow_msgs:
+    - "{user} Sorry, this {collectible} was caught already!"
+"""
+
     if any(
         (
             add_owners,
@@ -471,6 +506,7 @@ sentry:
             add_spawn_manager,
             add_django,
             add_sentry,
+            add_catch_messages,
         )
     ):
         path.write_text(content)
