@@ -64,28 +64,6 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             player=player, ball=self.view.model
         ).exists()
 
-        if not self.view.is_name_valid(self.name.value):
-            if len(self.name.value) > 500:
-                wrong_name = "Sorry, entered name too long"
-            else:
-                wrong_name = self.name.value
-
-            wrong_message = random.choice(settings.wrong_messages).format(
-                user=interaction.user.mention,
-                collectible=settings.collectible_name,
-                ball=self.view.name,
-                collectibles=settings.plural_collectible_name,
-                wrong=wrong_name,
-            )
-
-            await interaction.followup.send(
-                wrong_message,
-                allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
-                ephemeral=False,
-            )
-
-            return
-
         if settings.caught_cooldown > 0 and has_caught_before:
             # Delay if has caught already
             if isinstance(interaction.channel, discord.TextChannel):
@@ -108,12 +86,33 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
 
             await interaction.followup.send(
                 slow_message,
-                ephemeral=False,
+                ephemeral=True,
                 allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
             )
             return
 
-        # All other checks have passed; catch the ball
+        if not self.view.is_name_valid(self.name.value):
+            if len(self.name.value) > 500:
+                wrong_name = "Sorry, entered name too long"
+            else:
+                wrong_name = self.name.value
+
+            wrong_message = random.choice(settings.wrong_messages).format(
+                user=interaction.user.mention,
+                collectible=settings.collectible_name,
+                ball=self.view.name,
+                collectibles=settings.plural_collectible_name,
+                wrong=wrong_name,
+            )
+
+            await interaction.followup.send(
+                wrong_message,
+                allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
+                ephemeral=False,
+            )
+
+            return
+
         ball, has_caught_before = await self.view.catch_ball(
             interaction.user, player=player, guild=interaction.guild
         )
@@ -122,6 +121,7 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             self.view.get_catch_message(ball, has_caught_before, interaction.user.mention),
             allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
         )
+
         await interaction.followup.edit_message(self.view.message.id, view=self.view)
 
 
