@@ -19,7 +19,7 @@ services:
       postgres-db:
         condition: service_healthy
     ports:
-    - "50677:50677" # Prometheus ports
+    - "31601:50677" # Prometheus ports
     volumes:
       - ./:/code
       - /opt/IndividualDexData/media:/code/admin_panel/media
@@ -33,7 +33,7 @@ services:
     image: ballsdex
     build: .
     ports:
-      - "31617:8000"
+      - "31600:8000"
     environment:
       - *postgres-url
       # if serving the admin panel online, copy the file "production.example.py" and uncomment
@@ -83,8 +83,8 @@ services:
       - *postgres-user
       - POSTGRES_PASSWORD
     # WARNING: before exposing ports, change the default db password in the .env file!
-    # ports:
-    #   - "5432:5432"
+    ports:
+    - "127.0.0.1:31602:5432"
     volumes:  # Persist the db data
       - /opt/IndividualDexData/database-data:/var/lib/postgresql/data
     healthcheck:
