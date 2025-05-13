@@ -266,21 +266,6 @@ max-attack-bonus: 20
 # this cannot be smaller than 0, enter a positive number
 max-health-bonus: 20
 
-catch:
-  caught_cooldown: 10
-  per_spawn: 2
-  # Add any number of messages to each of these categories. The bot will select a random
-  # one each time.
-  # {0} is mention. {1} is collectible name. {2} is ball name.
-  caught_msgs:
-    - "{0} You caught **{2}**!"
-  wrong_msgs:
-    - "{0} Wrong name!"
-  slow_msgs:
-    - "{0} Sorry, this {1} was caught already!"
-  spawn_msgs:
-    - "A wild {1} appeared!"
-
 # enables the /admin command
 admin-command:
 
