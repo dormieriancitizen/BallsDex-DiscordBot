@@ -76,21 +76,6 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
                 await asyncio.sleep(settings.caught_cooldown)
                 await cooldown_message.delete()
 
-        if self.view.caught:
-            slow_message = random.choice(settings.slow_messages).format(
-                user=interaction.user.mention,
-                collectible=settings.collectible_name,
-                ball=self.view.name,
-                collectibles=settings.plural_collectible_name,
-            )
-
-            await interaction.followup.send(
-                slow_message,
-                ephemeral=True,
-                allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
-            )
-            return
-
         if not self.view.is_name_valid(self.name.value):
             if len(self.name.value) > 500:
                 wrong_name = self.name.value[:500] + "..."
@@ -111,6 +96,21 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
                 ephemeral=False,
             )
 
+            return
+
+        if self.view.caught:
+            slow_message = random.choice(settings.slow_messages).format(
+                user=interaction.user.mention,
+                collectible=settings.collectible_name,
+                ball=self.view.name,
+                collectibles=settings.plural_collectible_name,
+            )
+
+            await interaction.followup.send(
+                slow_message,
+                ephemeral=True,
+                allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
+            )
             return
 
         ball, has_caught_before = await self.view.catch_ball(
