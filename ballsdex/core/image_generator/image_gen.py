@@ -53,13 +53,12 @@ def draw_card(
     ball = ball_instance.countryball
     ball_health = (237, 115, 101, 255)
     ball_credits = ball.credits
-    special_credits = ""
     card_name = ball.cached_regime.name
     if special_image := ball_instance.special_card:
         card_name = getattr(ball_instance.specialcard, "name", card_name)
         image = Image.open(media_path + special_image)
         if ball_instance.specialcard and ball_instance.specialcard.credits:
-            special_credits += f" • Special Author: {ball_instance.specialcard.credits}"
+            ball_credits += f" • {ball_instance.specialcard.credits}"
     else:
         image = Image.open(media_path + ball.cached_regime.background)
     image = image.convert("RGBA")
@@ -82,23 +81,16 @@ def draw_card(
 
     for i, line in enumerate(cap_name):
         draw.text(
-            (60, (1035 + 100 * i)),
+            (100, 1050 + 100 * i),
             line,
             font=capacity_name_font,
-            fill="white",
+            fill=(230, 230, 230, 255),
             stroke_width=2,
             stroke_fill=(0, 0, 0, 255),
         )
-
-    capacity_description_lines = (
-        wrapped_line
-        for newline in ball.capacity_description.splitlines()
-        for wrapped_line in textwrap.wrap(newline, 32)
-    )
-
-    for i, line in enumerate(capacity_description_lines):
+    for i, line in enumerate(textwrap.wrap(ball.capacity_description, width=32)):
         draw.text(
-            (60, 1060 + 100 * len(cap_name) + 80 * i),
+            (60, 1100 + 100 * len(cap_name) + 80 * i),
             line,
             font=capacity_description_font,
             stroke_width=1,
@@ -133,7 +125,7 @@ def draw_card(
         (30, 1870),
         # Modifying the line below is breaking the licence as you are removing credits
         # If you don't want to receive a DMCA, just don't
-        f"Created by El Laggron{special_credits}\n" f"Artwork author: {ball_credits}",
+        "Created by El Laggron\n" f"Artwork author: {ball_credits}",
         font=credits_font,
         fill=credits_color,
         stroke_width=0,

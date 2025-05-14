@@ -64,18 +64,6 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             player=player, ball=self.view.model
         ).exists()
 
-        if settings.caught_cooldown > 0 and has_caught_before:
-            # Delay if has caught already
-            if isinstance(interaction.channel, discord.TextChannel):
-                cooldown_message = await interaction.channel.send(
-                    f"{interaction.user.mention} "
-                    f"You already have this {settings.collectible_name}"
-                    f"! Applying a {settings.caught_cooldown} delay before catching."
-                )
-
-                await asyncio.sleep(settings.caught_cooldown)
-                await cooldown_message.delete()
-
         if not self.view.is_name_valid(self.name.value):
             if len(self.name.value) > 500:
                 wrong_name = self.name.value[:500] + "..."
@@ -97,6 +85,18 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
             )
 
             return
+
+        if settings.caught_cooldown > 0 and has_caught_before:
+            # Delay if has caught already
+            if isinstance(interaction.channel, discord.TextChannel):
+                cooldown_message = await interaction.channel.send(
+                    f"{interaction.user.mention} "
+                    f"You already have this {settings.collectible_name}"
+                    f"! Applying a {settings.caught_cooldown} delay before catching."
+                )
+
+                await asyncio.sleep(settings.caught_cooldown)
+                await cooldown_message.delete()
 
         if self.view.caught:
             slow_message = random.choice(settings.slow_messages).format(
