@@ -10,7 +10,7 @@ from tortoise import Tortoise
 
 from ballsdex.core.dev import pagify, send_interactive
 from ballsdex.core.models import Ball
-from ballsdex.settings import settings, update_settings
+from ballsdex.settings import read_settings, settings
 
 log = logging.getLogger("ballsdex.core.commands")
 
@@ -92,11 +92,14 @@ class Core(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def reloadconf(self, ctx: commands.Context):
-        update_settings(Path("/code/config.yml"))
+        """
+        Reload the config file
+        """
+
+        read_settings(Path("./config.yml"))
         await ctx.message.add_reaction("✅")
         await ctx.message.reply(
-            """Config values have been updated.
-            Some changes may require a restart."""
+            """Config values have been updated. Some changes may require a restart."""
         )
 
     @commands.command()
