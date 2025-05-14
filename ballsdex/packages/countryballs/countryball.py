@@ -65,25 +65,20 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         ).exists()
 
         if not self.view.is_name_valid(self.name.value):
-            if len(self.name.value) > 500:
-                wrong_name = self.name.value[:500] + "..."
-            else:
-                wrong_name = self.name.value
-
             wrong_message = random.choice(settings.wrong_messages).format(
                 user=interaction.user.mention,
                 collectible=settings.collectible_name,
                 ball=self.view.name,
                 collectibles=settings.plural_collectible_name,
-                wrong=wrong_name,
             )
 
             await interaction.followup.send(
                 wrong_message,
-                allowed_mentions=discord.AllowedMentions(users=player.can_be_mentioned),
+                allowed_mentions=discord.AllowedMentions(
+                    users=player.can_be_mentioned, everyone=False, roles=False
+                ),
                 ephemeral=False,
             )
-
             return
 
         if settings.caught_cooldown > 0 and has_caught_before:
