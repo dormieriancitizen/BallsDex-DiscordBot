@@ -5,7 +5,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 DEFAULT_MEDIA_PATH: str = "./media/"
-DEFAULT_TARGET_FORMAT = "webp"
 
 
 class Command(BaseCommand):
@@ -40,7 +39,9 @@ class Command(BaseCommand):
             file = Path(model_image).absolute()
 
             model_type = type(model_instance).__name__
-            model_name = getattr(model_instance, "name") or getattr(model_instance, "country")
+            model_name = getattr(model_instance, "name", None) or getattr(
+                model_instance, "country"
+            )
             target = file.parent / f"{model_type}_{model_name}_{media_attr}"
 
             if target.exists():
