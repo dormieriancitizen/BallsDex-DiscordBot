@@ -42,7 +42,7 @@ class Command(BaseCommand):
             model_name = getattr(model_instance, "name", None) or getattr(
                 model_instance, "country"
             )
-            target = file.parent / f"{model_type}_{model_name}_{media_attr}{file.suffix}"
+            target = file.parent / f"{model_type}-{model_name}-{media_attr}{file.suffix}"
 
             if target.exists():
                 self.stderr.write(f"{target.name} already exists! Can't rename {file.name}")
