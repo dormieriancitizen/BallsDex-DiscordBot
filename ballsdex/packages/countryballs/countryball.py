@@ -167,6 +167,7 @@ class BallSpawnView(View):
         self.special: Special | None = None
         self.atk_bonus: int | None = None
         self.hp_bonus: int | None = None
+        self.og_id: int
 
     async def interaction_check(self, interaction: discord.Interaction["BallsDexBot"], /) -> bool:
         return await interaction.client.blacklist_check(interaction)
@@ -205,6 +206,7 @@ class BallSpawnView(View):
 
         view = cls(bot, ball_instance.ball)
         view.ballinstance = ball_instance
+        view.og_id = ball_instance.player.discord_id
         return view
 
     @classmethod
@@ -445,6 +447,8 @@ class BallSpawnView(View):
                 f"This is a **new {settings.collectible_name}** "
                 "that has been added to your completion!"
             )
+        if self.ballinstance:
+            text += f"This {settings.collectible_name} was dropped by <@{self.og_id}>\n"
 
         caught_message = (
             random.choice(settings.caught_messages).format(
