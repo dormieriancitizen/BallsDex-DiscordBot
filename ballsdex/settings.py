@@ -141,12 +141,14 @@ def read_settings(path: "Path"):
     settings.team_owners = content.get("owners", {}).get("team-members-are-owners", False)
     settings.co_owners = content.get("owners", {}).get("co-owners", [])
 
-    settings.collectible_name = content["collectible-name"]
-    settings.plural_collectible_name = content.get(
-        "plural-collectible-name", content["collectible-name"] + "s"
+    settings.collectible_name = content["collectible-name"].lower().replace(" ", "-")
+    settings.plural_collectible_name = (
+        content.get("plural-collectible-name", content["collectible-name"] + "s")
+        .lower()
+        .replace(" ", "-")
     )
     settings.bot_name = content["bot-name"]
-    settings.players_group_cog_name = content["players-group-cog-name"]
+    settings.players_group_cog_name = content["players-group-cog-name"].lower().replace(" ", "-")
     settings.favorited_collectible_emoji = content.get("favorited-collectible-emoji", "❤️")
     settings.show_rarity = content.get("show-rarity", False)
 
