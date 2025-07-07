@@ -43,6 +43,9 @@ class Command(BaseCommand):
                 model_instance, "country"
             )
             target = file.parent / f"{model_type}-{model_name}-{media_attr}{file.suffix}"
+            
+            if file == target:
+                continue
 
             if target.exists():
                 self.stderr.write(f"{target.name} already exists! Can't rename {file.name}")
