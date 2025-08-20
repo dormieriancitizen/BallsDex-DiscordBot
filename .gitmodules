@@ -1,0 +1,3 @@
+[submodule "CBattle"]
+	path = CBattle
+	url = https://github.com/Dotsian/CBattle
