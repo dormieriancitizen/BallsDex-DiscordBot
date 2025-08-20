@@ -33,11 +33,11 @@ artwork_size = [b - a for a, b in zip(*CORNERS)]
 # image viewer. There are options available to specify the ball or the special background,
 # use the "--help" flag to view all options.
 
-title_font = ImageFont.truetype(str(SOURCES_PATH / "ArsenicaTrial-Extrabold.ttf"), 170)
+title_font = ImageFont.truetype(str(SOURCES_PATH / "Galindo-Regular.ttf"), 170)
 capacity_name_font = ImageFont.truetype(str(SOURCES_PATH / "Bobby Jones Soft.otf"), 110)
-capacity_description_font = ImageFont.truetype(str(SOURCES_PATH / "OpenSans-Semibold.ttf"), 75)
+capacity_description_font = ImageFont.truetype(str(SOURCES_PATH / "Lexend.ttf"), 75)
 stats_font = ImageFont.truetype(str(SOURCES_PATH / "Bobby Jones Soft.otf"), 130)
-credits_font = ImageFont.truetype(str(SOURCES_PATH / "arial.ttf"), 40)
+credits_font = ImageFont.truetype(str(SOURCES_PATH / "CascadiaMono.ttf"), 40)
 
 credits_color_cache = {}
 
@@ -143,7 +143,7 @@ def draw_card(
         (30, 1870),
         # Modifying the line below is breaking the licence as you are removing credits
         # If you don't want to receive a DMCA, just don't
-        f"Created by El Laggron{special_credits}\n" f"Artwork author: {ball_credits}",
+        f"Created by El Laggron{special_credits}\nArtwork author: {ball_credits}",
         font=credits_font,
         fill=credits_color,
         stroke_width=0,
