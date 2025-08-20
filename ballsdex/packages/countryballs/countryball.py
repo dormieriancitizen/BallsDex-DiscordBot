@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import math
 import random
@@ -44,7 +45,10 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         self.view = view
 
     async def on_error(
-        self, interaction: discord.Interaction["BallsDexBot"], error: Exception, /  # noqa: W504
+        self,
+        interaction: discord.Interaction["BallsDexBot"],
+        error: Exception,
+        /,  # noqa: W504
     ) -> None:
         log.exception("An error occured in countryball catching prompt", exc_info=error)
         if interaction.response.is_done():
@@ -60,20 +64,6 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
         await interaction.response.defer(thinking=True)
 
         player, _ = await Player.get_or_create(discord_id=interaction.user.id)
-        if self.view.caught:
-            slow_message = random.choice(settings.slow_messages).format(
-                user=interaction.user.mention,
-                collectible=settings.collectible_name,
-                ball=self.view.name,
-                collectibles=settings.plural_collectible_name,
-            )
-
-            await interaction.followup.send(
-                slow_message,
-                ephemeral=True,
-                allowed_mentions=await can_mention([player]),
-            )
-            return
 
         if not self.view.is_name_valid(self.name.value):
             if len(self.name.value) > 500:
@@ -92,6 +82,38 @@ class CountryballNamePrompt(Modal, title=f"Catch this {settings.collectible_name
                 wrong_message,
                 allowed_mentions=await can_mention([player]),
                 ephemeral=False,
+            )
+            return
+
+        has_caught_before: bool = await BallInstance.filter(
+            player=player, ball=self.view.model
+        ).exists()
+
+        caught_cooldown = 10
+        if caught_cooldown > 0 and has_caught_before:
+            # Delay if has caught already
+            if isinstance(interaction.channel, discord.TextChannel):
+                cooldown_message = await interaction.channel.send(
+                    f"{interaction.user.mention} "
+                    f"You already have this {settings.collectible_name}"
+                    f"! Applying a {caught_cooldown} delay before catching."
+                )
+
+                await asyncio.sleep(caught_cooldown)
+                await cooldown_message.delete()
+
+        if self.view.caught:
+            slow_message = random.choice(settings.slow_messages).format(
+                user=interaction.user.mention,
+                collectible=settings.collectible_name,
+                ball=self.view.name,
+                collectibles=settings.plural_collectible_name,
+            )
+
+            await interaction.followup.send(
+                slow_message,
+                ephemeral=True,
+                allowed_mentions=await can_mention([player]),
             )
             return
 

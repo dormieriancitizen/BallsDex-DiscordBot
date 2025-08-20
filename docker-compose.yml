@@ -8,7 +8,7 @@ x-common-env-vars:
 
 services:
   bot:
-    restart: "no"
+    restart: always
     image: ballsdex
     build: .
     environment:
@@ -18,34 +18,38 @@ services:
         condition: service_completed_successfully
       postgres-db:
         condition: service_healthy
-    # ports:
-    #   - "15260:15260"
-    networks:
-      - internal
+    ports:
+    - "31601:50677" # Prometheus ports
     volumes:
-      - "./:/code"
+      - ./:/code
+      - /opt/IndividualDexData/media:/code/admin_panel/media
+      - /opt/IndividualDexData/config.yml:/code/config.yml
+      - /opt/IndividualDexData/ballsdex.log:/code/ballsdex.log
     tty: true
     working_dir: /code/
-    command: python3 -m ballsdex
+    command: python3 -m ballsdex --dev
 
   admin-panel:
     image: ballsdex
     build: .
+    restart: always
     ports:
-      - "8000:8000"
-    networks:
-      - internal
+      - "31600:8000"
     environment:
       - *postgres-url
       # if serving the admin panel online, copy the file "production.example.py" and uncomment
-      # - DJANGO_SETTINGS_MODULE=admin_panel.settings.production
+      - DJANGO_SETTINGS_MODULE=admin_panel.settings.production
     depends_on:
       migration:
         condition: service_completed_successfully
       postgres-db:
         condition: service_healthy
     volumes:
-      - "./:/code"
+      - ./:/code
+      - /opt/IndividualDexData/media:/code/admin_panel/media
+      - /opt/IndividualDexData/config.yml:/code/config.yml
+      - /opt/IndividualDexData/ballsdex.log:/code/ballsdex.log
+      - /opt/IndividualDexData/django_production.py:/code/admin_panel/admin_panel/settings/production.py
     tty: true
     working_dir: /code/admin_panel
     command: "python3 -m uvicorn admin_panel.asgi:application --host 0.0.0.0"
@@ -53,12 +57,13 @@ services:
   migration:
     image: ballsdex
     build: .
-    networks:
-      - internal
     environment:
       - *postgres-url
     volumes:
       - ./:/code
+      - /opt/IndividualDexData/media:/code/admin_panel/media
+      - /opt/IndividualDexData/config.yml:/code/config.yml
+      - /opt/IndividualDexData/ballsdex.log:/code/ballsdex.log
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -80,11 +85,9 @@ services:
       - POSTGRES_PASSWORD
     # WARNING: before exposing ports, change the default db password in the .env file!
     # ports:
-    #   - "5432:5432"
-    networks:
-      - internal
+    # - "127.0.0.1:31602:5432"
     volumes:  # Persist the db data
-      - database-data:/var/lib/postgresql/data
+      - /opt/IndividualDexData/database-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ballsdex}"]
       interval: 5s
@@ -97,12 +100,10 @@ services:
     # Uncomment to have the backup files owned by your local user instead of root
     # user: username
     volumes:
-      - ./pgbackups:/backups
+      - /opt/IndividualDexData/pgbackups:/backups
     depends_on:
       postgres-db:
         condition: service_healthy
-    networks:
-      - internal
     environment:
       - *postgres-db
       - *postgres-user
@@ -126,10 +127,3 @@ services:
   #     - ./gatewayproxy/config.json:/config.json
   #   networks:
   #     - internal
-
-volumes:
-  database-data:
-  cache-data:
-
-networks:
-  internal:
