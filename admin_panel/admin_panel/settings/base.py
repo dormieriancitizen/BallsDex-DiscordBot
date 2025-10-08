@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     "bd_models",
     "preview",
     "media_management",
-]
+] + settings.django_apps
 
 MIDDLEWARE = [
     "allow_cidr.middleware.AllowCIDRMiddleware",
