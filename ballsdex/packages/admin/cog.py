@@ -377,7 +377,6 @@ class Admin(commands.Cog):
         await ctx.send(view=view, ephemeral=True)
 
     @admin.command()
-    @checks.is_superuser()
     async def impersonate(self, ctx: commands.Context["BallsDexBot"], user: discord.Member | None = None):
         """
         Impersonate a user on your next slash commands.
@@ -394,12 +393,23 @@ class Admin(commands.Cog):
                 await ctx.send_help(ctx.command)
                 return
             del impersonations[ctx.author.id]
-            await ctx.send("You are not impersonating anymore.")
-        else:
-            impersonations[ctx.author.id] = user
-            await ctx.send(
-                f"Your next commands will be run as if {user.display_name} ran it.\n"
-                "Avoid running the commands in a different server, this can lead to weird issues.\n"
-                f"To clear impersonation, run `{ctx.prefix}admin impersonate` again.",
-                ephemeral=True,
-            )
+            return
+
+        # have to check in the function instead of as a decorator
+        # because otherwise admin can't unimpersonate
+        django_user = await checks.get_user_for_check(ctx.bot, ctx.author)
+
+        if django_user is not True:
+            # Only way check can return true is if user is superuser
+            # in any other case they shouldn't be allowed to impersonate
+            # even if they are a valid user on the panel
+            await ctx.reply("You are not allowed to use this command!")
+
+        await ctx.send("You are not impersonating anymore.")
+        impersonations[ctx.author.id] = user
+        await ctx.send(
+            f"Your next commands will be run as if {user.display_name} ran it.\n"
+            "Avoid running the commands in a different server, this can lead to weird issues.\n"
+            f"To clear impersonation, run `{ctx.prefix}admin impersonate` again.",
+            ephemeral=True,
+        )
