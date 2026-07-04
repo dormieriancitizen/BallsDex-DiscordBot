@@ -19,7 +19,8 @@ if TYPE_CHECKING:
     from bd_models.models import Ball
 
 COLON_IDS_RE = re.compile(r"^(\d{17,21}(;\d{17,21})*)?$")
-SLASH_COMMAND_RE = re.compile(r"^[-_'\S]{1,32}$")
+SLASH_COMMAND_RE = re.compile(r"^[a-z0-9-_']{1,32}$")
+SLASH_COMMAND_WARNING = "Invalid slash command name. Must not contain spaces, caps, or some special chars."
 DISCORD_INVITE_RE = re.compile(r"^https?://(discord.gg|discord(app)?.com/invite)/[a-zA-Z0-9]+$")
 DISCORD_WEBHOOK_RE = re.compile(r"^https://discord.com/api/webhooks/[0-9]{17,22}/[a-zA-Z0-9-_]{68}$")
 SENTRY_ENV_RE = re.compile(r"^(?!None$)[^\s/]{,64}$")
@@ -33,19 +34,19 @@ class Settings(models.Model):
     collectible_name = models.TextField(
         help_text="The singular name of your collectible",
         default="countryball",
-        validators=(RegexValidator(SLASH_COMMAND_RE, message="Invalid slash command name."),),
+        validators=(RegexValidator(SLASH_COMMAND_RE, message=SLASH_COMMAND_WARNING),),
     )
     plural_collectible_name = models.TextField(
         help_text="The plural name of your collectible",
         default="countryballs",
-        validators=(RegexValidator(SLASH_COMMAND_RE, message="Invalid slash command name."),),
+        validators=(RegexValidator(SLASH_COMMAND_RE, message=SLASH_COMMAND_WARNING),),
     )
 
     bot_name = models.TextField(help_text="The name of your bot", default="BallsDex")
     balls_slash_name = models.TextField(
         help_text='Overrides "/balls" slash command',
         default="balls",
-        validators=(RegexValidator(SLASH_COMMAND_RE, message="Invalid slash command name."),),
+        validators=(RegexValidator(SLASH_COMMAND_RE, message=SLASH_COMMAND_WARNING),),
     )
     site_base_url = models.URLField(
         default="http://localhost:8000", help_text="Base URL of this website, accessible with admin commands."
